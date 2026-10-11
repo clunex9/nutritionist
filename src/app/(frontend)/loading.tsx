@@ -2,7 +2,7 @@
 
 export default function Loading() {
   return (
-    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#0c2419] via-[#081e13] to-[#04120a] text-[#FAFDF7]">
+    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-linear-to-br from-[#0c2419] via-[#081e13] to-[#04120a] text-[#FAFDF7]">
       {/* Background Decorative Animated Patterns / Leaves */}
       <div className="pointer-events-none absolute inset-0 opacity-20">
         {/* Floating Natural Patterns */}
@@ -109,16 +109,16 @@ export default function Loading() {
         <div className="mt-8 flex w-64 max-w-full flex-col items-center">
           {/* Subtle percentage & decorative visual */}
           <div className="relative mb-2 flex w-full items-center justify-between">
-            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-green-800/60" />
+            <div className="h-px flex-1 bg-linear-to-r from-transparent to-green-800/60" />
             <span className="px-3 text-sm font-semibold text-green-400 select-none">
               Please Wait
             </span>
-            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-green-800/60" />
+            <div className="h-px flex-1 bg-linear-to-l from-transparent to-green-800/60" />
           </div>
 
           {/* Modern Slim Natural Progress Bar with leaf caps */}
           <div className="relative h-1 w-full overflow-hidden rounded-full bg-green-950/80">
-            <div className="absolute top-0 left-0 h-full animate-[loadingProgress_3s_ease-out_infinite] rounded-full bg-gradient-to-r from-emerald-500 to-green-400" />
+            <div className="absolute top-0 left-0 h-full animate-[loadingProgress_3s_ease-out_infinite] rounded-full bg-linear-to-r from-emerald-500 to-green-400" />
           </div>
         </div>
       </div>
