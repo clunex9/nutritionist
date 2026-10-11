@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
         hostname: '*.public.blob.vercel-storage.com', // For vercel blob images
       },
       {
+        protocol: 'https',
+        hostname: 'nutritionist-two.vercel.app', // Aapki live domain
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '3000', // Local dev server ke absolute URLs ke liye
