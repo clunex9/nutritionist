@@ -31,7 +31,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
     <html lang="en" suppressHydrationWarning className={urbanist.variable}>
       <body className="bg-green-97 font-sans antialiased">
         <AuthSyncProvider>
-          <NextTopLoader color="#cbea7b" showSpinner={false} />
+          <NextTopLoader color="#cbea7b" />
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
         </AuthSyncProvider>
