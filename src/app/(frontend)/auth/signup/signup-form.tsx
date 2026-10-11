@@ -61,7 +61,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       password: '',
       confirmPassword: '',
     },
-    mode: 'onTouched',
+    mode: 'onChange',
   })
 
   const processSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -123,7 +123,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
                 type="text"
                 placeholder="John Doe"
                 autoComplete="name"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm py-4 transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -149,7 +149,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck="false"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm py-4 transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -205,7 +205,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
           <Button
             type="submit"
             disabled={form.formState.isSubmitting}
-            className="bg-green-70 hover:bg-green-80 text-foreground w-full rounded-sm font-semibold disabled:cursor-not-allowed disabled:opacity-80"
+            className="bg-green-70 hover:bg-green-80 text-foreground h-auto w-full rounded-sm py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-80"
           >
             {form.formState.isSubmitting ? (
               <span className="flex items-center gap-2">
@@ -249,7 +249,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
               setIsGoogleLoading(true)
               window.location.href = `/api/auth/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
             }}
-            className="bg-dark-green-20 border-dark-green-25 hover:bg-dark-green-25 text-green-97 hover:text-green-97 w-full cursor-pointer rounded-sm disabled:cursor-not-allowed disabled:opacity-70"
+            className="bg-dark-green-20 border-dark-green-25 hover:bg-dark-green-25 text-green-97 hover:text-green-97 h-auto w-full cursor-pointer rounded-sm py-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isGoogleLoading ? (
               <span className="flex items-center gap-2">

@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
             type="submit"
             form="reset-form"
             disabled={isPending} // 👈 isPending use kiya
-            className="bg-green-70 hover:bg-green-80 text-foreground w-full rounded-sm font-semibold"
+            className="bg-green-70 hover:bg-green-80 text-foreground h-auto w-full rounded-sm py-2 font-semibold"
           >
             {isPending ? 'Updating...' : 'Update Password'}
           </Button>

@@ -19,13 +19,13 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           {...props}
           ref={ref}
           type={showPassword ? 'text' : 'password'}
-          className={`pr-10 ${className || ''}`} // pr-10 taaki text icon ke peeche na chhup jaye
+          className={`py-4 pr-10 ${className || ''}`} // pr-10 taaki text icon ke peeche na chhup jaye
         />
         <button
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
           // Sirf positioning classes yahan rakhi hain, colors parent se de sakte hain
-          className={`absolute top-1/2 right-3 -translate-y-1/2 transition-colors focus:outline-none ${buttonClassName || ''}`}
+          className={`absolute top-1/2 right-0 h-full -translate-y-1/2 px-2 transition-colors focus:outline-none ${buttonClassName || ''}`}
           aria-label={showPassword ? 'Hide password' : 'Show password'}
         >
           {showPassword ? (

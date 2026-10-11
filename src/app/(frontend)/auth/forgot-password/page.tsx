@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
                 type="email"
                 placeholder="m@example.com"
                 autoComplete="email"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm py-4 transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
               />
               {/* 👇 Zod error show karne ke liye */}
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
             type="submit"
             form="forgot-form"
             disabled={isPending} // 👈 isPending use kiya
-            className="bg-green-70 hover:bg-green-80 text-foreground w-full rounded-sm font-semibold"
+            className="bg-green-70 hover:bg-green-80 text-foreground h-auto w-full rounded-sm py-2 font-semibold"
           >
             {isPending ? 'Sending reset link...' : 'Send Reset Link'}
           </Button>
