@@ -89,7 +89,7 @@ export const resetPasswordTemplate = async (args: any) => {
   const serverURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   const resetURL = hasCmsAccess(user)
-    ? `${serverURL}/admin/reset/${token}`
+    ? `${serverURL}/cms/reset/${token}`
     : `${serverURL}/auth/reset-password/${token}`
 
   const emailHtml = await render(<ResetPasswordEmailComponent user={user} resetURL={resetURL} />)
