@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import signinImage from './_images/signin-img.jpg'
 import Logo from '@/components/shared/logo'
+import Image from 'next/image'
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,10 +18,13 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         </div>
       </div>
       <div className="bg-muted relative hidden lg:block">
-        <img
-          src={signinImage.src}
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        <Image
+          src={signinImage}
+          alt="Authentication Background"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover dark:brightness-[0.2] dark:grayscale"
         />
       </div>
     </div>
