@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { REDIRECT_URL_MAP } from './constants/redirect-url-map'
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname, searchParams } = request.nextUrl
 
   // 1️⃣ Redirect url Map
   if (REDIRECT_URL_MAP[pathname]) {
@@ -20,7 +20,7 @@ export async function proxy(request: NextRequest) {
 
   // 3️⃣ Route Protection Logic
   // Condition A: Agar user logged in NAHI hai aur '/account' access karna chahta hai -> Redirect to Sign In
-  if (!token && isAccountRoute) {
+  if (!token && isAccountRoute && searchParams.get('reason') !== 'expired') {
     const signInUrl = new URL('/auth/signin', request.url)
     signInUrl.searchParams.set('callbackUrl', pathname) // UX Improvement: Login ke baad wapas yahi aayega
     return NextResponse.redirect(signInUrl)
