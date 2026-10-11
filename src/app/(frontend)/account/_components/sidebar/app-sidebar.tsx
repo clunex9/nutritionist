@@ -253,7 +253,11 @@ export function AppSidebar({
         }
       `}</style>
 
-      <Sidebar collapsible="icon" {...props} className="**:data-[sidebar=sidebar]:bg-dark-green-15">
+      <Sidebar
+        collapsible="icon"
+        {...props}
+        className="**:data-[sidebar=sidebar]:bg-dark-green-15 border-r-dark-green-15"
+      >
         <SidebarHeader>
           <SidebarLogo brand={data.brand as any} />
         </SidebarHeader>
@@ -261,7 +265,7 @@ export function AppSidebar({
           <NavProjects projects={data.projects} />
         </SidebarContent>
         <SidebarFooter>{user ? <NavUser user={user} /> : null}</SidebarFooter>
-        <SidebarRail />
+        {/* <SidebarRail /> */}
       </Sidebar>
     </React.Fragment>
   )

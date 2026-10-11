@@ -2,7 +2,12 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar'
 
 export function SidebarLogo({
   brand,
@@ -13,11 +18,18 @@ export function SidebarLogo({
     plan: string
   }
 }) {
+  const { isMobile, setOpenMobile } = useSidebar()
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         {/* 👇 SidebarMenuButton ke andar Link wrap kar diya, onClick hata diya */}
-        <Link href="/" className="w-full">
+        <Link
+          href="/"
+          className="w-full"
+          onClick={() => {
+            if (isMobile) setOpenMobile(false)
+          }}
+        >
           <SidebarMenuButton
             size="lg"
             className="hover:bg-dark-green-20 active:bg-dark-green-20 w-full"

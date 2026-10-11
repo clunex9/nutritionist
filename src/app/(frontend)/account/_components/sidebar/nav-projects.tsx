@@ -35,7 +35,7 @@ export function NavProjects({
     icon: React.ReactNode
   }[]
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
   const pathname = usePathname()
   return (
     <SidebarGroup
@@ -50,6 +50,9 @@ export function NavProjects({
               <SidebarMenuButton
                 tooltip={item.name}
                 isActive={isActive}
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false)
+                }}
                 className={`active:bg-dark-green-20 hover:bg-dark-green-20 text-green-97 hover:text-green-97 active:text-green-97 ${
                   isActive ? 'bg-dark-green-20! text-green-97!' : ''
                 }`}
