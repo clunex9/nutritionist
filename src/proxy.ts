@@ -20,14 +20,14 @@ export async function proxy(request: NextRequest) {
 
   // 3️⃣ Route Protection Logic
   // Condition A: Agar user logged in NAHI hai aur '/account' access karna chahta hai -> Redirect to Sign In
-  if (!token && isAccountRoute && searchParams.get('reason') !== 'expired') {
+  if (!token && isAccountRoute) {
     const signInUrl = new URL('/auth/signin', request.url)
     signInUrl.searchParams.set('callbackUrl', pathname) // UX Improvement: Login ke baad wapas yahi aayega
     return NextResponse.redirect(signInUrl)
   }
 
   // Condition B: Agar user logged in HAI aur '/auth' (signin/signup) access karna chahta hai -> Redirect to Account/Profile
-  if (token && isAuthRoute) {
+  if (token && isAuthRoute && searchParams.get('reason') !== 'expired') {
     return NextResponse.redirect(new URL('/account/profile', request.url))
   }
 

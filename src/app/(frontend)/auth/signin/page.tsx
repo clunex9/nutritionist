@@ -1,4 +1,6 @@
 import SigninForm from './signin-form'
+import { SessionExpiredNotice } from './session-expired-notice'
+import { getSafeCallbackUrl } from '@/lib/safe-redirect'
 
 // 👇 TypeScript interface add kiya taaki 'any' na use karna pade
 type PageProps = {
@@ -10,13 +12,17 @@ export default async function SigninPage(props: PageProps) {
   const searchParams = await props.searchParams
 
   // URL se callbackUrl nikalo, agar nahi hai toh default '/account/profile' use karo
-  const callbackUrl =
-    (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
-    '/account/profile'
+  // const callbackUrl =
+  //   (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
+  //   '/account/profile'
+  const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl)
+
+  const reason = typeof searchParams?.reason === 'string' ? searchParams.reason : undefined
 
   // Form ko callbackUrl pass kar do
   return (
     <div className="mx-auto w-full max-w-md">
+      <SessionExpiredNotice reason={reason} />
       <SigninForm callbackUrl={callbackUrl} />
     </div>
   )
