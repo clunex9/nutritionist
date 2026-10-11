@@ -23,6 +23,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           alt="Authentication Background"
           fill
           priority
+          decoding="sync"
           sizes="50vw"
           className="object-cover dark:brightness-[0.2] dark:grayscale"
         />
