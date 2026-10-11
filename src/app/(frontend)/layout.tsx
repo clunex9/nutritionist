@@ -6,6 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthSyncProvider } from '@/providers/auth-sync.provider'
 import { Toaster } from '@/components/ui/toast'
 import './styles.css'
+import SmoothScrollProvider from '@/providers/smooth-scroll.provider'
 
 const urbanist = Urbanist({
   subsets: ['latin'],
@@ -30,11 +31,13 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
   return (
     <html lang="en" suppressHydrationWarning className={urbanist.variable}>
       <body className="bg-green-97 font-sans antialiased">
-        <AuthSyncProvider>
-          <NextTopLoader color="#cbea7b" />
-          <TooltipProvider>{children}</TooltipProvider>
-          <Toaster />
-        </AuthSyncProvider>
+        <SmoothScrollProvider>
+          <AuthSyncProvider>
+            <NextTopLoader color="#cbea7b" />
+            <TooltipProvider>{children}</TooltipProvider>
+            <Toaster />
+          </AuthSyncProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   )

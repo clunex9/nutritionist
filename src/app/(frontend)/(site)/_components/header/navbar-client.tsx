@@ -17,7 +17,7 @@ import {
 
 import { hasCmsAccess } from '@/access/roles'
 import { useScrollLock } from '@/hooks/use-scroll-lock'
-import { useHeadroom } from '@/hooks/use-headroom'
+// import { useHeadroom } from '@/hooks/use-headroom'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Bookmark01Icon,
@@ -51,7 +51,7 @@ const navlinks: { name: string; url: string }[] = [
 export default function NavbarClient({ user }: { user: User | null }) {
   const pathname = usePathname()
   const router = useRouter()
-  const headerRef = useRef<HTMLDivElement>(null)
+  // const headerRef = useRef<HTMLDivElement>(null)
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -59,7 +59,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
   const [isLoggingOut, startLogout] = useTransition()
 
   useScrollLock(isMenuOpen)
-  useHeadroom(headerRef)
+  // useHeadroom(headerRef)
 
   const avatarObj =
     typeof user?.avatar === 'object' && user.avatar !== null ? (user.avatar as AvatarType) : null
@@ -110,7 +110,10 @@ export default function NavbarClient({ user }: { user: User | null }) {
   }
 
   return (
-    <nav ref={headerRef} className="bg-dark-green-15 sticky top-0 z-50 w-full shadow-sm">
+    <nav
+      // ref={headerRef}
+      className="bg-dark-green-15 sticky top-0 z-50 w-full shadow-sm"
+    >
       <div className="container flex h-17.5 items-center justify-between">
         {/* Logo Section */}
         <Link

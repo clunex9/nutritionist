@@ -40,10 +40,10 @@ export default async function Blogs() {
         <Tabs defaultValue="all" className="w-full">
           {/* Top Navigation Bar */}
           <TabsList
-            className="bg-dark-green-20 text-background sticky z-40 mb-10 flex h-auto! w-full scrollbar-none flex-nowrap justify-start gap-2 overflow-x-auto rounded-t-none rounded-b-lg p-4 [-ms-overflow-style:none] lg:px-20 [&::-webkit-scrollbar]:hidden"
-            style={{
-              top: 'calc(var(--header-height, 70px) + var(--header-offset, 0px))',
-            }}
+            className="bg-dark-green-20 text-background z-40 mb-10 flex h-auto! w-full scrollbar-none flex-nowrap justify-start gap-2 overflow-x-auto rounded-t-none rounded-b-lg p-4 [-ms-overflow-style:none] lg:px-20 [&::-webkit-scrollbar]:hidden"
+            // style={{
+            //   top: 'calc(var(--header-height, 70px) + var(--header-offset, 0px))',
+            // }}
           >
             {categoryTabs.map(({ label, value }) => (
               <TabsTrigger
