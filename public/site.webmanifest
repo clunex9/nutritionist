@@ -2,10 +2,14 @@
   "id": "/",
   "name": "Nutritionist",
   "short_name": "Nutritionist",
-  "icons": [
-    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
-  ],
+  "description": "Personalised nutrition guidance, meal tracking and healthy eating plans.",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "categories": ["health", "food", "lifestyle"],
@@ -24,13 +28,13 @@
       "purpose": "any"
     },
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/maskable-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/maskable-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
