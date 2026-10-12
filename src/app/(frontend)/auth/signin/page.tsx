@@ -13,13 +13,10 @@ export default async function SigninPage(props: PageProps) {
   const callbackUrl =
     (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
     '/account/profile'
-  // const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl)
-  // const reason = typeof searchParams?.reason === 'string' ? searchParams.reason : undefined
 
   // Form ko callbackUrl pass kar do
   return (
     <div className="mx-auto w-full max-w-md">
-      {/* <SessionExpiredNotice reason={reason} /> */}
       <SigninForm callbackUrl={callbackUrl} />
     </div>
   )

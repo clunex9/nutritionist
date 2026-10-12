@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { toast } from '@/components/ui/toast'
 import { FieldError } from '@/components/ui/field'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -36,7 +36,7 @@ const profileSchema = z.object({
 })
 
 // 👇 Ab component `user` as a prop accept karega
-export default function ProfileForm({ user }: { user: User }) {
+export default function ProfileForm({ user }: { user: User | null }) {
   const [isPending, startTransition] = useTransition() // 👈 Native loading state
   const [newAvatarPreview, setNewAvatarPreview] = useState<string | null>(null)
   const [isFullImageLoading, setIsFullImageLoading] = useState(true)
@@ -189,25 +189,6 @@ export default function ProfileForm({ user }: { user: User }) {
                 }}
               >
                 <DialogTrigger>
-                  {/* <Avatar className="border-background group relative h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 shadow-lg md:h-32 md:w-32">
-                    {displayAvatar && (
-                      <AvatarImage
-                        key={displayAvatar}
-                        src={displayAvatar}
-                        alt={user?.name || 'User profile avatar'}
-                        referrerPolicy="no-referrer"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                    )}
-                    <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
-
-                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      <HugeiconsIcon
-                        icon={ViewIcon}
-                        className="h-8 w-8 text-white/90 drop-shadow-md"
-                      />
-                    </div>
-                  </Avatar> */}
                   <Avatar className="border-background bg-muted group relative h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 shadow-lg md:h-32 md:w-32">
                     {displayAvatar ? (
                       <Image

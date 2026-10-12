@@ -26,8 +26,7 @@ export const Users: CollectionConfig = {
   },
 
   auth: {
-    // tokenExpiration: 30 * 24 * 60 * 60, // 30 days * 24 hours * 60 mins * 60 secs
-    tokenExpiration: 60, // 30 days * 24 hours * 60 mins * 60 secs
+    tokenExpiration: 30 * 24 * 60 * 60, // 30 days * 24 hours * 60 mins * 60 secs
     maxLoginAttempts: 3,
     lockTime: 15 * 60 * 1000, // 15 minutes
 

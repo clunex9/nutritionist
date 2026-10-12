@@ -61,67 +61,9 @@ export function NavProjects({
                 {item.icon}
                 <span>{item.name}</span>
               </SidebarMenuButton>
-              {/* <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <SidebarMenuAction
-                    showOnHover
-                    className="aria-expanded:bg-dark-green-20 hover:bg-dark-green-20"
-                  />
-                }
-              >
-                <HugeiconsIcon
-                  icon={MoreHorizontalCircle01Icon}
-                  strokeWidth={2}
-                  className="text-green-97"
-                />
-                <span className="sr-only">More</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="bg-dark-green-15 border-dark-green-20 w-fit border"
-                side={isMobile ? 'bottom' : 'right'}
-                align={isMobile ? 'end' : 'start'}
-              >
-                <DropdownMenuItem
-                  className={
-                    'focus:bg-dark-green-20 text-green-97 focus:**:text-green-97! focus:text-green-97'
-                  }
-                >
-                  <HugeiconsIcon icon={FolderIcon} strokeWidth={2} className="text-green-97/70" />
-                  <span>View Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className={
-                    'focus:bg-dark-green-20 text-green-97 focus:**:text-green-97! focus:text-green-97'
-                  }
-                >
-                  <HugeiconsIcon
-                    icon={ArrowRightIcon}
-                    strokeWidth={2}
-                    className="text-green-97/70"
-                  />
-                  <span>Share Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className={'bg-dark-green-20'} />
-                <DropdownMenuItem variant="destructive">
-                  <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu> */}
             </SidebarMenuItem>
           )
         })}
-        {/* <SidebarMenuItem>
-          <SidebarMenuButton className="active:bg-dark-green-20 hover:bg-dark-green-20 text-green-97/70 hover:text-green-97 active:text-green-97">
-            <HugeiconsIcon
-              icon={MoreHorizontalCircle01Icon}
-              strokeWidth={2}
-              className="text-green-97/70"
-            />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem> */}
       </SidebarMenu>
     </SidebarGroup>
   )

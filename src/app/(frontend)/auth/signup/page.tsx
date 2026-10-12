@@ -13,12 +13,9 @@ export default async function SignupPage(props: PageProps) {
   const callbackUrl =
     (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
     '/account/profile'
-  // Sirf same-site relative path allow hai, warna default '/account/profile'
-  // const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl)
 
   return (
     <div className="mx-auto w-full max-w-md">
-      {/* Client Component ko callbackUrl prop pass kar diya */}
       <SignupForm callbackUrl={callbackUrl} />
     </div>
   )
