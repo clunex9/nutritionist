@@ -15,6 +15,10 @@ const urbanist = Urbanist({
 
 export const viewport: Viewport = {
   themeColor: '#1a3129',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover', // 🔥 यह लाइन जंप इश्यू को फिक्स करेगी
 }
 
 export const metadata: Metadata = {
