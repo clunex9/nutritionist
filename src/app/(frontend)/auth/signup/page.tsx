@@ -1,4 +1,4 @@
-import { getSafeCallbackUrl } from '@/lib/safe-redirect'
+// import { getSafeCallbackUrl } from '@/lib/safe-redirect'
 import SignupForm from './signup-form' // 👈 Apne form component ka sahi path daalna
 
 type PageProps = {
@@ -10,11 +10,11 @@ export default async function SignupPage(props: PageProps) {
   const searchParams = await props.searchParams
 
   // URL se callbackUrl nikalo, agar nahi hai toh default '/account/profile' use karo
-  // const callbackUrl =
-  //   (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
-  //   '/account/profile'
+  const callbackUrl =
+    (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
+    '/account/profile'
   // Sirf same-site relative path allow hai, warna default '/account/profile'
-  const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl)
+  // const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl)
 
   return (
     <div className="mx-auto w-full max-w-md">

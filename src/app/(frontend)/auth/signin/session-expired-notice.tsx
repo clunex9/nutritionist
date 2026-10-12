@@ -1,6 +1,3 @@
-// Signin page pe use hota hai: <SessionExpiredNotice reason={reason} />
-// Auth layout dark green hai, isliye dark-friendly colors rakhe hain.
-
 export function SessionExpiredNotice({ reason }: { reason?: string }) {
   if (reason !== 'expired') return null
 

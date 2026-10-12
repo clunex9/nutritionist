@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { REDIRECT_URL_MAP } from './constants/redirect-url-map'
 
 export async function proxy(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl
+  const { pathname } = request.nextUrl
 
   // 1️⃣ Redirect url Map
   if (REDIRECT_URL_MAP[pathname]) {
@@ -27,7 +27,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Condition B: Agar user logged in HAI aur '/auth' (signin/signup) access karna chahta hai -> Redirect to Account/Profile
-  if (token && isAuthRoute && searchParams.get('reason') !== 'expired') {
+  if (token && isAuthRoute) {
     return NextResponse.redirect(new URL('/account/profile', request.url))
   }
 
