@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import NextTopLoader from 'nextjs-toploader'
 import { Urbanist } from 'next/font/google'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -12,6 +12,10 @@ const urbanist = Urbanist({
   subsets: ['latin'],
   variable: '--font-urbanist',
 })
+
+export const viewport: Viewport = {
+  themeColor: '#1a3129',
+}
 
 export const metadata: Metadata = {
   description: 'A blank template using Payload in a Next.js app.',

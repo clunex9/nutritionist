@@ -10,7 +10,7 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "theme_color": "#ffffff",
+  "theme_color": "#1a3129",
   "background_color": "#ffffff",
   "categories": ["health", "food", "lifestyle"],
   "prefer_related_applications": false,
