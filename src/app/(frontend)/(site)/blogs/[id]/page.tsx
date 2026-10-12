@@ -60,20 +60,36 @@ export default async function BlogSinglePage({ params }: PageProps) {
       userId = user?.id || null
 
       if (userId) {
-        // Check if THIS specific blog is favorited by the user
-        const favCheck = await payload.find({
-          collection: 'favorites',
-          where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
-          depth: 0,
-        })
-        isFavorited = favCheck.totalDocs > 0
+        // // Check if THIS specific blog is favorited by the user
+        // const favCheck = await payload.find({
+        //   collection: 'favorites',
+        //   where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
+        //   depth: 0,
+        // })
+        // isFavorited = favCheck.totalDocs > 0
 
-        // Check if THIS specific blog is bookmarked by the user
-        const bookCheck = await payload.find({
-          collection: 'bookmarks',
-          where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
-          depth: 0,
-        })
+        // // Check if THIS specific blog is bookmarked by the user
+        // const bookCheck = await payload.find({
+        //   collection: 'bookmarks',
+        //   where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
+        //   depth: 0,
+        // })
+        // isBookmarked = bookCheck.totalDocs > 0
+
+        const [favCheck, bookCheck] = await Promise.all([
+          payload.find({
+            collection: 'favorites',
+            where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
+            depth: 0,
+          }),
+          payload.find({
+            collection: 'bookmarks',
+            where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
+            depth: 0,
+          }),
+        ])
+
+        isFavorited = favCheck.totalDocs > 0
         isBookmarked = bookCheck.totalDocs > 0
       }
     } catch (e) {
