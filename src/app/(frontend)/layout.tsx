@@ -37,10 +37,6 @@ export const metadata: Metadata = {
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={urbanist.variable}>
-      <head>
-        {/* Browser engine को तुरंत dark green देने के लिए Hardcoded Meta Tag */}
-        <meta name="theme-color" content="#1a3129" />
-      </head>
       <body className="bg-green-97 font-sans antialiased">
         <SmoothScrollProvider>
           <AuthSyncProvider>
