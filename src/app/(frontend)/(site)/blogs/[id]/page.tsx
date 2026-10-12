@@ -1,7 +1,4 @@
 import { notFound } from 'next/navigation'
-
-// Button import ki ab zaroorat nahi agar aap sirf breadcrumb use kar rahe hain,
-// par agar kahin aur chahiye toh rakh sakte hain.
 import AddToFavorite from '@/components/shared/add-to-favorite'
 import AddToBookmark from '@/components/shared/add-to-bookmark'
 
@@ -22,7 +19,7 @@ import { cookies } from 'next/headers'
 
 // 👇 Sabhi zaroori Payload types import kiye
 import type { Blog, User, BlogImage, Avatar as AvatarType } from '@/payload-types'
-import { AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import Image from 'next/image'
 
 // Next.js ke params Next.js 15+ me Promise hote hain
@@ -143,31 +140,33 @@ export default async function BlogSinglePage({ params }: PageProps) {
             {blog.title}
           </h1>
 
-          <div className="border-green-80 flex flex-col items-center justify-between gap-6 rounded-2xl border bg-white p-6 shadow-sm md:flex-row md:gap-4">
+          <div className="border-green-80 flex flex-col items-center justify-between gap-6 rounded-lg border bg-white p-6 md:flex-row md:gap-4">
             {/* Author Info */}
             <div className="flex items-center gap-4 text-left">
               {/* 👇 Shadcn Avatar hata kar Native div/img lagaya */}
               <div className="bg-dark-green-15 relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md lg:size-12.5">
-                {finalAvatarUrl ? (
-                  <Image
-                    src={finalAvatarUrl}
-                    alt={author?.name || 'Author'}
-                    width={50}
-                    height={50}
-                    priority={true} // 🔥 Preload
-                    decoding="sync" // 🔥 Force browser to paint instantly
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <AvatarFallback className="text-green-95 bg-dark-green-15 rounded-md text-lg font-bold uppercase">
-                    {initials}
-                  </AvatarFallback>
-                )}
+                <Avatar className="bg-dark-green-15 size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">
+                  {finalAvatarUrl ? (
+                    <Image
+                      src={finalAvatarUrl}
+                      alt={author?.name || 'Author'}
+                      width={50}
+                      height={50}
+                      priority={true} // 🔥 Preload
+                      decoding="sync" // 🔥 Force browser to paint instantly
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="text-green-95 bg-dark-green-15 rounded-md text-lg font-bold uppercase">
+                      {initials}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
               </div>
 
               <div className="flex flex-col">
                 <span className="mb-1 text-lg leading-none font-bold text-gray-900">
-                  {author?.name || 'Anonymous Author'}
+                  {author?.name || 'Anonymous'}
                 </span>
                 <span className="text-sm font-medium text-gray-500">
                   {new Date(blog.createdAt).toLocaleDateString('en-GB', {
@@ -190,7 +189,7 @@ export default async function BlogSinglePage({ params }: PageProps) {
 
         {/* 🔵 HERO IMAGE */}
         {/* 👇 Next.js Image hata kar Native img lagaya aur bg-gray-200 add kiya as placeholder */}
-        <div className="border-green-85 relative mb-12 aspect-video w-full overflow-hidden rounded-3xl border bg-gray-200">
+        <div className="border-green-85 relative mb-12 aspect-video w-full overflow-hidden rounded-lg border bg-gray-200">
           {finalCoverImageUrl ? (
             <Image
               src={finalCoverImageUrl}
