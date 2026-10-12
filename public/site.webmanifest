@@ -8,7 +8,6 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "theme_color": "#1a3129",
   "background_color": "#ffffff",
