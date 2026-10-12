@@ -275,6 +275,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
                 </DropdownMenu>
               ) : (
                 <Link
+                  aria-label="signin"
                   href="/auth/signin"
                   className="bg-green-70 hover:bg-green-80 text-dark-green-20 flex size-8 items-center justify-center rounded-full font-semibold"
                 >
