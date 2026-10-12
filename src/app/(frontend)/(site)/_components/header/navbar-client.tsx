@@ -4,7 +4,7 @@ import { useState, useRef, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +37,7 @@ import { logoutAction } from '@/actions/auth.action'
 import { notifyAuthChange } from '@/lib/auth-sync'
 import type { User, Avatar as AvatarType } from '@/payload-types'
 import Image from 'next/image'
+import { cn } from 'cn'
 
 const navlinks: { name: string; url: string }[] = [
   { name: 'Home', url: '/' },
@@ -409,11 +410,16 @@ export default function NavbarClient({ user }: { user: User | null }) {
                   </button>
                 </div>
               ) : (
-                <Button className="bg-green-70 text-dark-green-20 hover:bg-green-80 w-full rounded-full py-6 text-lg font-bold transition-transform hover:-translate-y-1">
-                  <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
-                    Sign In
-                  </Link>
-                </Button>
+                <Link
+                  className={cn(
+                    buttonVariants(),
+                    'bg-green-70 text-dark-green-20 hover:bg-green-80 w-full rounded-full py-6 text-lg font-bold',
+                  )}
+                  href="/auth/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
               )}
             </div>
           </div>
