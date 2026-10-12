@@ -36,5 +36,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  // ai-catalog.json और llms.txt को मिडिलवेयर से बाहर रखें
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|ai-catalog.json|llms.txt).*)'],
 }
