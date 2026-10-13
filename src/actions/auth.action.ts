@@ -38,7 +38,7 @@ export async function loginAction(data: { email: string; password: string }) {
 }
 
 // 👉 2. Register Action
-export async function registerAction(data: any) {
+export async function registerAction(data: any, callbackUrl: string) {
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -48,27 +48,16 @@ export async function registerAction(data: any) {
       data,
     })
 
-    // Register ke baad turant login karwana hai toh:
-    // const loginResult = await payload.login({
-    //   collection: 'users',
-    //   data: { email: data.email, password: data.password },
-    // })
+    // ✅ Verification ke baad redirect karne ke liye cookie mein callbackUrl save karein
+    const cookieStore = await cookies()
+    cookieStore.set('pending-callback-url', callbackUrl, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60, // 1 hour validity (kyunki verify token 1 ghante mein expire hota hai)
+    })
 
-    // if (loginResult.token) {
-    //   const maxAge = loginResult.exp
-    //     ? Math.floor(loginResult.exp - Date.now() / 1000)
-    //     : 30 * 24 * 60 * 60
-    //   const cookieStore = await cookies()
-    //   cookieStore.set('payload-token', loginResult.token, {
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === 'production',
-    //     sameSite: 'lax',
-    //     path: '/',
-    //     maxAge,
-    //   })
-    // }
-
-    // revalidatePath('/', 'layout')
     return { success: true, user: result }
   } catch (error: any) {
     return { success: false, error: error.message || 'Registration failed' }

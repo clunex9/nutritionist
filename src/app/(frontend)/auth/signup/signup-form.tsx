@@ -72,17 +72,16 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
 
     try {
       const { confirmPassword, ...backendData } = data
-      const result = await registerAction(backendData)
+      const result = await registerAction(backendData, callbackUrl)
 
       if (result.success) {
         form.reset()
         toast.add({
           type: 'success',
           title: 'Account created successfully!',
+          description: 'Please check your email to verify your account.',
         })
         router.push('/auth/signin')
-        // router.refresh()
-        // router.push(callbackUrl)
       } else {
         toast.add({ type: 'error', title: result.error })
       }
