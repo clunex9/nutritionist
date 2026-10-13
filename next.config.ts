@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

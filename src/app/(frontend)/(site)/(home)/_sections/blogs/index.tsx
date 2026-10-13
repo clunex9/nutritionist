@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import AddToFavorite from '@/components/shared/add-to-favorite'
 import AddToBookmark from '@/components/shared/add-to-bookmark'
 
@@ -46,27 +46,40 @@ export default async function Blogs() {
       userId = user?.id || null
 
       if (userId) {
-        // Fetch favorites
-        const userFavs = await payload.find({
-          collection: 'favorites',
-          where: { user: { equals: userId } },
-          depth: 0,
-          pagination: false,
-        })
+        // Sirf un 4 blogs ki IDs nikal rahe hain jo screen par render honge
+        const displayedBlogIds = blogs.map((b) => b.id)
+
+        // Promise.all use karke Favs aur Books dono ko ek sath (parallel) fetch kar rahe hain
+        const [userFavs, userBooks] = await Promise.all([
+          payload.find({
+            collection: 'favorites',
+            where: {
+              and: [
+                { user: { equals: userId } },
+                { blog: { in: displayedBlogIds } }, // Sirf inhi 4 blogs ka data aayega
+              ],
+            },
+            depth: 0,
+            pagination: false,
+          }),
+          payload.find({
+            collection: 'bookmarks',
+            where: {
+              and: [
+                { user: { equals: userId } },
+                { blog: { in: displayedBlogIds } }, // Sirf inhi 4 blogs ka data aayega
+              ],
+            },
+            depth: 0,
+            pagination: false,
+          }),
+        ])
 
         userFavoriteBlogsIds = userFavs.docs
           .map((fav: Record<string, any>) =>
             typeof fav.blog === 'string' ? fav.blog : fav.blog?.id,
           )
           .filter(Boolean) as string[]
-
-        // Fetch bookmarks
-        const userBooks = await payload.find({
-          collection: 'bookmarks',
-          where: { user: { equals: userId } },
-          depth: 0,
-          pagination: false,
-        })
 
         userBookmarkBlogsIds = userBooks.docs
           .map((book: Record<string, any>) =>

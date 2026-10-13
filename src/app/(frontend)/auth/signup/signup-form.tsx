@@ -80,9 +80,9 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
           type: 'success',
           title: 'Account created successfully!',
         })
-
-        router.refresh()
-        router.push(callbackUrl)
+        router.push('/auth/signin')
+        // router.refresh()
+        // router.push(callbackUrl)
       } else {
         toast.add({ type: 'error', title: result.error })
       }

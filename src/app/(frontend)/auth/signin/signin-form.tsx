@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Controller, useForm } from 'react-hook-form'
 import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -30,6 +30,22 @@ const formSchema = z.object({
 export default function SigninPage({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const searchParams = useSearchParams()
+
+  // ✅ Verification Success Message Logic
+  useEffect(() => {
+    // URL me check karein ki kya '?verified=true' hai
+    if (searchParams?.get('verified') === 'true') {
+      toast.add({
+        type: 'success',
+        title: 'Account Verified! 🎉',
+        description: 'You can now log in with your credentials.',
+      })
+
+      // Optional: Message dikhane ke baad URL ko clean kar dein taaki dobara refresh par na dikhe
+      // router.replace('/auth/signin', { scroll: false })
+    }
+  }, [searchParams, router])
 
   useEffect(() => {
     const handleResetLoading = () => {

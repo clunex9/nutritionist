@@ -15,6 +15,7 @@ import {
 } from './field-access'
 import { canShowLockUntilField, canShowRoleField, showIfUserExists } from './conditions'
 import { resetPasswordTemplate } from '@/templates/reset-password.template'
+import { verifyEmailTemplate } from '@/templates/verify-email.template'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -31,7 +32,11 @@ export const Users: CollectionConfig = {
     lockTime: 15 * 60 * 1000, // 15 minutes
 
     forgotPassword: {
-      generateEmailHTML: (args) => resetPasswordTemplate(args),
+      generateEmailHTML: async (args) => await resetPasswordTemplate(args),
+    },
+    verify: {
+      generateEmailHTML: async (args) => await verifyEmailTemplate(args),
+      generateEmailSubject: () => 'Verify your email for NUTRITIONIST',
     },
   },
 

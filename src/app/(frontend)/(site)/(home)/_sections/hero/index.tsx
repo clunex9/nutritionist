@@ -3,7 +3,7 @@ import heroImage from './images/hero-image.webp'
 import userOne from './images/user-1.jpg'
 import userTwo from './images/user-2.png'
 import userThree from './images/user-3.png'
-import { Avatar, AvatarGroup, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { AvatarGroup } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 
 export default function Hero() {
@@ -11,35 +11,10 @@ export default function Hero() {
     // 1. Parent section ko 'relative' diya taaki absolute background iske hisaab se set ho
     <section id="hero" className="relative scroll-mt-10 pb-7.5 lg:pb-10">
       {/* ===== FULL BLEED BACKGROUND (Left Side) ===== */}
-      <div
-        className="absolute top-0 left-0 z-0 h-100 w-full rounded-br-4xl rounded-bl-4xl md:h-125 lg:h-175 lg:w-[calc(50%-20px)] lg:rounded-bl-none"
-        style={{
-          backgroundColor: '#dcf1a7',
-          backgroundImage: `
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M17 20h6M20 17v6' stroke='%23999' stroke-width='1'/%3E%3C/svg%3E"),
-            linear-gradient(to right, #D4DEB9 1px, transparent 0),
-            linear-gradient(to bottom, #D4DEB9 1px, transparent 0),
-            linear-gradient(to right, #D8E7B0 1px, transparent 0),
-            linear-gradient(to bottom, #D8E7B0 1px, transparent 0)
-          `,
-          backgroundSize: '60px 60px, 60px 60px, 60px 60px, 4px 4px, 4px 4px',
-          backgroundPosition: '-19.5px -19.5px, 0 0, 0 0, 0 0, 0 0',
-        }}
-      />
+      <div className="bg-hero-pattern absolute top-0 left-0 z-0 h-100 w-full rounded-br-4xl rounded-bl-4xl md:h-125 lg:h-175 lg:w-[calc(50%-20px)] lg:rounded-bl-none" />
       {/* ===== MAIN CONTENT CONTAINER ===== */}
       <div className="relative z-10 container w-full px-0 lg:px-4">
         <div className="flex flex-col items-center gap-0 lg:flex-row lg:gap-10">
-          {/* <div className="relative h-100 w-full overflow-hidden rounded-br-4xl rounded-bl-4xl md:h-125 lg:h-175 lg:w-1/2 lg:rounded-bl-none">
-            <Image
-              src={heroImage}
-              alt="Personalized Nutrition Coaching"
-              fetchPriority="high"
-              decoding="sync"
-              className="absolute inset-0 h-full w-full object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div> */}
-
           <div className="relative h-100 w-full overflow-hidden rounded-br-4xl rounded-bl-4xl md:h-125 lg:h-175 lg:w-1/2 lg:rounded-bl-none">
             <Image
               src={heroImage}
@@ -88,32 +63,6 @@ export default function Hero() {
             </div>
 
             <div className="absolute -top-6.5 left-0 flex w-full flex-col items-center gap-2 lg:static lg:mt-12.5 lg:flex-row">
-              {/* <AvatarGroup className="border-green-70 bg-green-97 flex -space-x-2 rounded-full border p-2">
-                <div className="relative size-10 shrink-0 overflow-hidden rounded-full border-2 border-white">
-                  <img
-                    src={userOne.src}
-                    alt="Happy Customer 1"
-                    fetchPriority="high"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="relative size-10 shrink-0 overflow-hidden rounded-full border-2 border-white">
-                  <img
-                    src={userTwo.src}
-                    alt="Happy Customer 2"
-                    fetchPriority="high"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="relative size-10 shrink-0 overflow-hidden rounded-full border-2 border-white">
-                  <img
-                    src={userThree.src}
-                    alt="Happy Customer 3"
-                    fetchPriority="high"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </AvatarGroup> */}
               <AvatarGroup className="border-green-70 bg-green-97 flex -space-x-2 rounded-full border p-2">
                 <div className="relative size-10 shrink-0 overflow-hidden rounded-full border-2 border-white">
                   <Image

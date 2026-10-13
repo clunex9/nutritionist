@@ -49,26 +49,26 @@ export async function registerAction(data: any) {
     })
 
     // Register ke baad turant login karwana hai toh:
-    const loginResult = await payload.login({
-      collection: 'users',
-      data: { email: data.email, password: data.password },
-    })
+    // const loginResult = await payload.login({
+    //   collection: 'users',
+    //   data: { email: data.email, password: data.password },
+    // })
 
-    if (loginResult.token) {
-      const maxAge = loginResult.exp
-        ? Math.floor(loginResult.exp - Date.now() / 1000)
-        : 30 * 24 * 60 * 60
-      const cookieStore = await cookies()
-      cookieStore.set('payload-token', loginResult.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge,
-      })
-    }
+    // if (loginResult.token) {
+    //   const maxAge = loginResult.exp
+    //     ? Math.floor(loginResult.exp - Date.now() / 1000)
+    //     : 30 * 24 * 60 * 60
+    //   const cookieStore = await cookies()
+    //   cookieStore.set('payload-token', loginResult.token, {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === 'production',
+    //     sameSite: 'lax',
+    //     path: '/',
+    //     maxAge,
+    //   })
+    // }
 
-    revalidatePath('/', 'layout')
+    // revalidatePath('/', 'layout')
     return { success: true, user: result }
   } catch (error: any) {
     return { success: false, error: error.message || 'Registration failed' }
@@ -193,5 +193,26 @@ export async function updateProfileAction(formData: FormData) {
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update profile' }
+  }
+}
+
+export async function verifyEmailAction(token: string) {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    // Payload ka official native verify function
+    // Ye khud database me check karega, _verified true karega aur token delete karega
+    const isVerified = await payload.verifyEmail({
+      collection: 'users',
+      token: token,
+    })
+
+    if (!isVerified) {
+      throw new Error('Verification failed. Token might be invalid or expired.')
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Verification failed' }
   }
 }

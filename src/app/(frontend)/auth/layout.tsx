@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import signinImage from './_images/signin-img.jpg'
+import signinImage from '@/images/signin-img.jpg'
 import Logo from '@/components/shared/logo'
 import Image from 'next/image'
 

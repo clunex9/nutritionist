@@ -196,42 +196,78 @@
   padding-inline: 1rem;
 }
 
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+@utility bg-hero-pattern {
+  background-color: #dcf1a7;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M17 20h6M20 17v6' stroke='%23999' stroke-width='1'/%3E%3C/svg%3E"),
+    linear-gradient(to right, #d4deb9 1px, transparent 0),
+    linear-gradient(to bottom, #d4deb9 1px, transparent 0),
+    linear-gradient(to right, #d8e7b0 1px, transparent 0),
+    linear-gradient(to bottom, #d8e7b0 1px, transparent 0);
+  background-size:
+    60px 60px,
+    60px 60px,
+    60px 60px,
+    4px 4px,
+    4px 4px;
+  background-position:
+    -19.5px -19.5px,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
 }
 
-.glass-shine {
-  position: relative;
-  overflow: hidden;
-  background-color: #1b382b; /* Dark green base */
-}
-
-.glass-shine::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  animation: shimmer 1.5s infinite;
-}
-
-
-.team-bg-pattern {
-  background-color: #D0F08B;
-  background-image: 
+@utility team-bg-pattern {
+  background-color: #d0f08b;
+  background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M17 20h6M20 17v6' stroke='%2394C947' stroke-width='1.5'/%3E%3C/svg%3E"),
-    linear-gradient(to right, #C0E773 1px, transparent 0),
-    linear-gradient(to bottom, #C0E773 1px, transparent 0),
-    linear-gradient(to right, #C8EC80 1px, transparent 0),
-    linear-gradient(to bottom, #C8EC80 1px, transparent 0);
-  background-size: 60px 60px, 60px 60px, 60px 60px, 4px 4px, 4px 4px;
-  background-position: -19.5px -19.5px, 0 0, 0 0, 0 0, 0 0;
+    linear-gradient(to right, #c0e773 1px, transparent 0),
+    linear-gradient(to bottom, #c0e773 1px, transparent 0),
+    linear-gradient(to right, #c8ec80 1px, transparent 0),
+    linear-gradient(to bottom, #c8ec80 1px, transparent 0);
+  background-size:
+    60px 60px,
+    60px 60px,
+    60px 60px,
+    4px 4px,
+    4px 4px;
+  background-position:
+    -19.5px -19.5px,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
 }
 
 
 
 
+/* styles.css */
+/* Isse browser ko pata chalega ki ye alag element hai jo fix rehna chahiye */
+header, nav.bg-dark-green-15 {
+  view-transition-name: site-header;
+}
+
+footer {
+  view-transition-name: site-footer;
+}
+
+/* Same animation code jo pehle tha (sirf content area par apply hoga) */
+::view-transition-old(root) {
+  animation: fade-out 0.2s ease-out both;
+}
+
+::view-transition-new(root) {
+  animation: slide-up-fade-in 0.3s ease-out both;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slide-up-fade-in {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
