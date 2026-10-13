@@ -117,6 +117,7 @@ export async function forgotPasswordAction(data: { email: string }) {
     await payload.forgotPassword({
       collection: 'users',
       data,
+      overrideAccess: true,
       // disableEmailTemplate: false, // Make sure ki email send ho
     })
 

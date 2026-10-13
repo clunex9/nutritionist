@@ -17,6 +17,7 @@ async function uploadGoogleAvatarToPayload(payload: any, imageUrl: string) {
     const uploadedAvatar = await payload.create({
       collection: 'avatars',
       data: {},
+      overrideAccess: true,
       file: {
         data: buffer,
         mimetype: mimeType,
@@ -90,6 +91,7 @@ export async function GET(req: NextRequest) {
     const existingUsers = await payload.find({
       collection: 'users',
       where: { email: { equals: userEmail } },
+      overrideAccess: true,
     })
 
     if (existingUsers.docs.length > 0) {
@@ -109,10 +111,12 @@ export async function GET(req: NextRequest) {
       await payload.update({
         collection: 'users',
         id: user.id,
+        overrideAccess: true,
         data: {
           password: secureRandomPassword,
           avatar: currentAvatarId || undefined, // 👈 'googleAvatar' field hata kar direct 'avatar' use kiya
           name: user.name || googleUser.name,
+          _verified: true,
         },
       })
     } else {
@@ -124,6 +128,7 @@ export async function GET(req: NextRequest) {
 
       const newUser = await payload.create({
         collection: 'users',
+        overrideAccess: true,
         data: {
           email: userEmail,
           name: googleUser.name || 'User',
@@ -166,7 +171,11 @@ export async function GET(req: NextRequest) {
     const isLocalhost = appUrl.startsWith('http://localhost')
 
     // ✅ THE LOOP FIX: Naya response object banaya aur cookie directly is par set ki
-    const response = NextResponse.redirect(redirectTo)
+    // const response = NextResponse.redirect(redirectTo)
+
+    const finalRedirectUrl = new URL(redirectTo)
+    finalRedirectUrl.searchParams.set('t', Date.now().toString())
+    const response = NextResponse.redirect(finalRedirectUrl.toString())
 
     response.cookies.set({
       name: 'payload-token',
