@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
         newAvatarId = await uploadGoogleAvatarToPayload(payload, highResAvatar)
       }
 
-      await payload.create({
+      const newUser = await payload.create({
         collection: 'users',
         data: {
           email: userEmail,
@@ -131,6 +131,16 @@ export async function GET(req: NextRequest) {
           password: secureRandomPassword,
           roles: ['subscriber'],
           authProvider: 'google',
+        },
+      })
+
+      // 2. 🔥 FIX: Create hone ke turant baad explicitly _verified true karo
+      await payload.update({
+        collection: 'users',
+        id: newUser.id,
+        overrideAccess: true,
+        data: {
+          _verified: true,
         },
       })
     }
