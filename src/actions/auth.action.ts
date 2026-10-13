@@ -189,18 +189,53 @@ export async function verifyEmailAction(token: string) {
   try {
     const payload = await getPayload({ config: configPromise })
 
-    // Payload ka official native verify function
-    // Ye khud database me check karega, _verified true karega aur token delete karega
-    const isVerified = await payload.verifyEmail({
-      collection: 'users',
-      token: token,
-    })
+    // Cookie se callbackUrl nikalna
+    const cookieStore = await cookies()
+    const storedCallbackUrl = cookieStore.get('pending-callback-url')?.value
+    const destination = storedCallbackUrl || '/account/profile'
 
-    if (!isVerified) {
+    let isSuccess = false
+
+    try {
+      // 1. Native Payload verification
+      const isVerified = await payload.verifyEmail({
+        collection: 'users',
+        token: token,
+      })
+      if (isVerified) isSuccess = true
+    } catch (verifyError) {
+      // 2. JWT Fallback Check (Agar token delete ho chuka hai)
+      try {
+        const tokenParts = token.split('.')
+        if (tokenParts.length === 3) {
+          const payloadString = Buffer.from(tokenParts[1], 'base64').toString('utf-8')
+          const decoded = JSON.parse(payloadString)
+
+          if (decoded?.email) {
+            const users = await payload.find({
+              collection: 'users',
+              where: { email: { equals: decoded.email } },
+              overrideAccess: true,
+            })
+            const user = users.docs[0]
+            if (user && user._verified === true) {
+              isSuccess = true
+            }
+          }
+        }
+      } catch (decodeError) {
+        // Fallback fail
+      }
+    }
+
+    if (!isSuccess) {
       throw new Error('Verification failed. Token might be invalid or expired.')
     }
 
-    return { success: true }
+    // ✅ Verification success hone par hi cookie delete karein
+    cookieStore.delete('pending-callback-url')
+
+    return { success: true, callbackUrl: destination }
   } catch (error: any) {
     return { success: false, error: error.message || 'Verification failed' }
   }
