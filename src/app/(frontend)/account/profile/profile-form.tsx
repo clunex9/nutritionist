@@ -44,6 +44,7 @@ export default function ProfileForm({ user }: { user: User | null }) {
 
   // 👇 1. Profile Avatar Load track karne ke liye nayi state
   const [isAvatarLoading, setIsAvatarLoading] = useState(true)
+  const avatarImgRef = useRef<HTMLImageElement>(null)
 
   const form = useForm({
     resolver: zodResolver(profileSchema),
@@ -77,7 +78,12 @@ export default function ProfileForm({ user }: { user: User | null }) {
   // 👇 2. Jab bhi Avatar URL change ho toh loading state dobara true kardo
   useEffect(() => {
     if (displayAvatar) {
-      setIsAvatarLoading(true)
+      // 👇 Check karein ki kya image already browser cache me hai
+      if (avatarImgRef.current?.complete) {
+        setIsAvatarLoading(false) // Cached hai toh pulse mat dikhao
+      } else {
+        setIsAvatarLoading(true) // Nayi image hai toh pulse dikhao
+      }
     }
   }, [displayAvatar])
 
@@ -208,6 +214,7 @@ export default function ProfileForm({ user }: { user: User | null }) {
                         )}
 
                         <Image
+                          ref={avatarImgRef}
                           src={displayAvatar}
                           alt={user?.name || 'User profile avatar'}
                           fill
