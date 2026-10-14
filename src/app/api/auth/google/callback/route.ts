@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { revalidatePath } from 'next/cache'
+import { getSafeCallbackUrl } from '@/lib/safe-redirect'
 import crypto from 'crypto'
 
-// ✅ Helper function: Google se image download karke Payload me upload karne ke liye
 async function uploadGoogleAvatarToPayload(payload: any, imageUrl: string) {
   try {
     const response = await fetch(imageUrl)
@@ -36,14 +36,29 @@ async function uploadGoogleAvatarToPayload(payload: any, imageUrl: string) {
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
   const code = searchParams.get('code')
-  const state = searchParams.get('state')
+  const stateParam = searchParams.get('state')
 
-  // 🔥 Fix 1: appUrl ko top par nikal liya taaki URL banane mein crash na ho
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '')
 
-  const rawRedirect = state ? decodeURIComponent(state) : '/account/profile'
-  const isSafeRedirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
-  const redirectTo = isSafeRedirect ? `${appUrl}${rawRedirect}` : `${appUrl}/account/profile`
+  // 🔒 1. CSRF State Verify karo
+  const storedCsrf = req.cookies.get('google_oauth_state')?.value
+  let callbackPath = '/account/profile'
+
+  if (stateParam) {
+    try {
+      const decoded = JSON.parse(Buffer.from(stateParam, 'base64url').toString('utf-8'))
+      if (!storedCsrf || decoded.csrfToken !== storedCsrf) {
+        return NextResponse.redirect(`${appUrl}/auth/signin?error=OAuthStateMismatch`)
+      }
+      callbackPath = getSafeCallbackUrl(decoded.callbackUrl, '/account/profile')
+    } catch {
+      return NextResponse.redirect(`${appUrl}/auth/signin?error=OAuthStateMismatch`)
+    }
+  } else {
+    return NextResponse.redirect(`${appUrl}/auth/signin?error=OAuthStateMismatch`)
+  }
+
+  const redirectTo = `${appUrl}${callbackPath}`
 
   if (!code) {
     return NextResponse.redirect(`${appUrl}/auth/signin?error=NoCode`)
@@ -74,7 +89,7 @@ export async function GET(req: NextRequest) {
     })
     const googleUser = await userRes.json()
 
-    const userEmail = googleUser.email?.toLowerCase()
+    const userEmail = googleUser.email?.toLowerCase().trim()
     const isEmailVerified = Boolean(googleUser.verified_email ?? googleUser.email_verified)
 
     if (!userEmail || !isEmailVerified) {
@@ -91,18 +106,17 @@ export async function GET(req: NextRequest) {
     const existingUsers = await payload.find({
       collection: 'users',
       where: { email: { equals: userEmail } },
+      limit: 1,
       overrideAccess: true,
     })
 
     if (existingUsers.docs.length > 0) {
       const user = existingUsers.docs[0]
 
-      // 🛡️ NATIVE RULE: Agar manual email user hai toh block karo
       if (user.authProvider === 'email') {
         return NextResponse.redirect(`${appUrl}/auth/signin?error=AccountExistsWithEmail`)
       }
 
-      // ✅ Agar user ke paas pehle se avatar nahi hai, tabhi naya download karo (Duplicate uploads rokne ke liye)
       let currentAvatarId = typeof user.avatar === 'object' ? user.avatar?.id : user.avatar
       if (!currentAvatarId && highResAvatar) {
         currentAvatarId = await uploadGoogleAvatarToPayload(payload, highResAvatar)
@@ -114,43 +128,44 @@ export async function GET(req: NextRequest) {
         overrideAccess: true,
         data: {
           password: secureRandomPassword,
-          avatar: currentAvatarId || undefined, // 👈 'googleAvatar' field hata kar direct 'avatar' use kiya
+          avatar: currentAvatarId || undefined,
           name: user.name || googleUser.name,
           _verified: true,
+          loginAttempts: 0,
+          lockUntil: null,
         },
       })
     } else {
-      // ✅ Naya User: Photo download karo aur ID link karo
       let newAvatarId = null
       if (highResAvatar) {
         newAvatarId = await uploadGoogleAvatarToPayload(payload, highResAvatar)
       }
 
+      // 🔥 Payload Native Way: Create ke waqt _verified false hota hai,
+      // isliye naya user create hone ke turant baad update karke _verified: true karna zaroori hai.
       const newUser = await payload.create({
         collection: 'users',
         overrideAccess: true,
         data: {
           email: userEmail,
           name: googleUser.name || 'User',
-          avatar: newAvatarId || undefined, // 👈 Uploaded image ki ID
+          avatar: newAvatarId || undefined,
           password: secureRandomPassword,
-          roles: ['subscriber'],
           authProvider: 'google',
         },
       })
 
-      // 2. 🔥 FIX: Create hone ke turant baad explicitly _verified true karo
       await payload.update({
         collection: 'users',
         id: newUser.id,
         overrideAccess: true,
         data: {
           _verified: true,
+          _verificationToken: null,
         },
       })
     }
 
-    // 🚀 NATIVE PAYLOAD LOGIN
     const loginResult = await payload.login({
       collection: 'users',
       data: {
@@ -170,12 +185,10 @@ export async function GET(req: NextRequest) {
     const isProduction = process.env.NODE_ENV === 'production'
     const isLocalhost = appUrl.startsWith('http://localhost')
 
-    // ✅ THE LOOP FIX: Naya response object banaya aur cookie directly is par set ki
-    // const response = NextResponse.redirect(redirectTo)
-
     const finalRedirectUrl = new URL(redirectTo)
-    finalRedirectUrl.searchParams.set('t', Date.now().toString())
     const response = NextResponse.redirect(finalRedirectUrl.toString())
+
+    response.cookies.delete('google_oauth_state')
 
     response.cookies.set({
       name: 'payload-token',
@@ -188,7 +201,6 @@ export async function GET(req: NextRequest) {
     })
 
     revalidatePath('/', 'layout')
-
     return response
   } catch (error) {
     console.error('Google OAuth Error:', error)

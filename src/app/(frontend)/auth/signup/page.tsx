@@ -1,18 +1,15 @@
-// import { getSafeCallbackUrl } from '@/lib/safe-redirect'
-import SignupForm from './signup-form' // 👈 Apne form component ka sahi path daalna
+import { getSafeCallbackUrl } from '@/lib/safe-redirect'
+import SignupForm from './signup-form'
 
 type PageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function SignupPage(props: PageProps) {
-  // Next.js 15 mein searchParams asynchronous hota hai, isliye isko await karna best practice hai
   const searchParams = await props.searchParams
 
-  // URL se callbackUrl nikalo, agar nahi hai toh default '/account/profile' use karo
-  const callbackUrl =
-    (typeof searchParams?.callbackUrl === 'string' ? searchParams.callbackUrl : undefined) ||
-    '/account/profile'
+  // 🔒 Open Redirect protection
+  const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl, '/account/profile')
 
   return (
     <div className="mx-auto w-full max-w-md">

@@ -1,5 +1,4 @@
 import { getServerUser } from '@/lib/get-server-user'
-import { redirect } from 'next/navigation'
 import ProfileForm from './profile-form'
 
 export default async function ProfilePage() {

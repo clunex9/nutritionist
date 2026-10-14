@@ -19,6 +19,7 @@ import { Team } from './collections/team'
 import { TeamAvatar } from './collections/team-avatar'
 import { TestimonialAvatar } from './collections/testimonial-avatar'
 import { ContactSubmissions } from './collections/contact-submissions'
+import { startUnverifiedUserCleanup } from './collections/users/cleanup'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -105,6 +106,10 @@ export default buildConfig({
         Icon: '@/components/cms/CustomIcon#CustomIcon',
       },
     },
+  },
+  onInit: async (payload) => {
+    // ✅ Server start hote hi automatic background cleanup chalu ho jayega
+    startUnverifiedUserCleanup(payload)
   },
   email: nodemailerAdapter({
     defaultFromAddress: process.env.SMTP_USER as string,

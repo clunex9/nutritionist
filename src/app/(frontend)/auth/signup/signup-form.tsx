@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -19,21 +20,26 @@ import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/shared/password-input'
 import { toast } from '@/components/ui/toast'
 import { registerAction } from '@/actions/auth.action'
-import { useEffect, useState } from 'react'
 
 const formSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.email('Invalid email'),
-    password: z.string().min(4, 'Minimum 4 characters required'),
-    confirmPassword: z.string(),
+    name: z
+      .string()
+      .trim()
+      .min(2, 'Name must be at least 2 characters')
+      .max(60, 'Name cannot exceed 60 characters'),
+    email: z.email('Please enter a valid email address'),
+    password: z
+      .string()
+      .min(4, 'Minimum 4 characters required')
+      .max(100, 'Password cannot exceed 100 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   })
 
-// 👇 callbackUrl as prop accept kar raha hai
 export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
@@ -43,7 +49,6 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       setIsGoogleLoading(false)
     }
 
-    // Jab bhi user tab par wapas aaye ya page history se restore ho
     window.addEventListener('focus', handleResetLoading)
     window.addEventListener('pageshow', handleResetLoading)
 
@@ -61,7 +66,6 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       password: '',
       confirmPassword: '',
     },
-    mode: 'onChange',
   })
 
   const processSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -78,12 +82,20 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
         form.reset()
         toast.add({
           type: 'success',
-          title: 'Account created successfully!',
+          title: 'Account created successfully! 🎉',
           description: 'Please check your email to verify your account.',
         })
-        router.push('/auth/signin')
+
+        const signinUrl = callbackUrl
+          ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
+          : '/auth/signin'
+
+        router.push(signinUrl)
       } else {
-        toast.add({ type: 'error', title: result.error })
+        toast.add({
+          type: 'error',
+          title: result.error || 'Registration failed',
+        })
       }
     } catch (error) {
       toast.add({ type: 'error', title: 'Something went wrong. Please try again.' })
@@ -122,6 +134,8 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
                 type="text"
                 placeholder="John Doe"
                 autoComplete="name"
+                autoCapitalize="words"
+                spellCheck="false"
                 className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm py-4 transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -203,7 +217,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
         <Field>
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={form.formState.isSubmitting || isGoogleLoading}
             className="bg-green-70 hover:bg-green-80 text-foreground h-auto w-full rounded-sm py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-80"
           >
             {form.formState.isSubmitting ? (
@@ -285,7 +299,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
                     fill="currentColor"
                   />
                 </svg>
-                Login with Google
+                Continue with Google
               </>
             )}
           </Button>

@@ -1,5 +1,5 @@
 import { type CollectionConfig } from 'payload'
-import { deleteOldAvatar, ensureFirstUserIsAdmin } from './hooks'
+import { deleteAvatarOnUserDelete, deleteOldAvatar, ensureFirstUserIsAdmin } from './hooks'
 import {
   canAccessCmsUI,
   canDeleteUsers,
@@ -42,6 +42,7 @@ export const Users: CollectionConfig = {
 
   hooks: {
     afterChange: [deleteOldAvatar],
+    afterDelete: [deleteAvatarOnUserDelete], // 👈 Ye line add karein
   },
 
   access: {
