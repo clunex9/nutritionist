@@ -42,6 +42,9 @@ export default function ProfileForm({ user }: { user: User | null }) {
   const [isFullImageLoading, setIsFullImageLoading] = useState(true)
   const fullImgRef = useRef<HTMLImageElement>(null)
 
+  // 👇 1. Profile Avatar Load track karne ke liye nayi state
+  const [isAvatarLoading, setIsAvatarLoading] = useState(true)
+
   const form = useForm({
     resolver: zodResolver(profileSchema),
     values: {
@@ -70,6 +73,13 @@ export default function ProfileForm({ user }: { user: User | null }) {
     currentAvatarValue === null
       ? undefined // 👈 Agar custom avatar remove kiya, toh Google Avatar check karo
       : newAvatarPreview || avatarObj?.thumbnailURL || avatarObj?.url || undefined
+
+  // 👇 2. Jab bhi Avatar URL change ho toh loading state dobara true kardo
+  useEffect(() => {
+    if (displayAvatar) {
+      setIsAvatarLoading(true)
+    }
+  }, [displayAvatar])
 
   const fullSizeAvatar =
     currentAvatarValue === null
@@ -191,15 +201,26 @@ export default function ProfileForm({ user }: { user: User | null }) {
                 <DialogTrigger>
                   <Avatar className="border-background bg-muted group relative h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 shadow-lg md:h-32 md:w-32">
                     {displayAvatar ? (
-                      <Image
-                        src={displayAvatar}
-                        alt={user?.name || 'User profile avatar'}
-                        fill
-                        priority
-                        sizes="(max-width: 768px) 112px, 128px"
-                        unoptimized
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      <>
+                        {/* 👇 3. Pulse Animation (Skeleton) */}
+                        {isAvatarLoading && (
+                          <div className="absolute inset-0 z-10 h-full w-full animate-pulse bg-gray-200 dark:bg-gray-800" />
+                        )}
+
+                        <Image
+                          src={displayAvatar}
+                          alt={user?.name || 'User profile avatar'}
+                          fill
+                          priority
+                          sizes="(max-width: 768px) 112px, 128px"
+                          unoptimized
+                          // 👇 4. onLoad set false hone par pulse gayab aur opacity-100 hogi
+                          onLoad={() => setIsAvatarLoading(false)}
+                          className={`object-cover transition-all duration-500 group-hover:scale-110 ${
+                            isAvatarLoading ? 'opacity-0' : 'opacity-100'
+                          }`}
+                        />
+                      </>
                     ) : (
                       <AvatarFallback className="bg-transparent text-4xl">
                         {initials}

@@ -118,7 +118,6 @@ export async function forgotPasswordAction(data: { email: string }) {
       collection: 'users',
       data,
       overrideAccess: true,
-      // disableEmailTemplate: false, // Make sure ki email send ho
     })
 
     return { success: true }
@@ -186,6 +185,7 @@ export async function updateProfileAction(formData: FormData) {
   }
 }
 
+// 👉 Verify Email Action
 export async function verifyEmailAction(token: string) {
   try {
     const payload = await getPayload({ config: configPromise })
