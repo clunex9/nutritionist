@@ -198,7 +198,7 @@ export default function ProfileForm({ user }: { user: User | null }) {
                       <>
                         {/* 👇 1. Skeleton ko peeche rakhne ke liye z-0 lagaya */}
                         {isAvatarLoading && (
-                          <div className="absolute inset-0 z-0 h-full w-full animate-pulse bg-gray-200 dark:bg-gray-800" />
+                          <div className="absolute inset-0 z-0 h-full w-full animate-pulse bg-gray-300/80 dark:bg-gray-700" />
                         )}
 
                         <Image
