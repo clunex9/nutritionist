@@ -12,10 +12,12 @@ export async function toggleFavoriteAction(blogId: string, currentPath: string) 
   const user = await getServerUser()
 
   if (!user || !user.id) {
-    throw new Error('Please login to add to favorites.')
+    // ❌ error throw mat karo
+    // throw new Error('Please login to add to favorites.')
+    // ✅ error object return karo
+    return { error: 'Please login to add to favorites.' }
   }
 
-  // Check if favorite exists
   const existingFavorite = await payload.find({
     collection: 'favorites',
     where: {
@@ -25,24 +27,20 @@ export async function toggleFavoriteAction(blogId: string, currentPath: string) 
   })
 
   if (existingFavorite.totalDocs > 0) {
-    // Delete favorite (Toggle OFF)
     await payload.delete({
       collection: 'favorites',
       id: existingFavorite.docs[0].id,
     })
-    // revalidatePath('/')
     revalidatePath(currentPath)
     return { success: true, isFavorited: false }
   } else {
-    // Create favorite (Toggle ON)
     await payload.create({
       collection: 'favorites',
       data: {
-        user: user.id, // Pass ID string directly
-        blog: blogId, // Pass ID string directly
+        user: user.id,
+        blog: blogId,
       },
     })
-    // revalidatePath('/')
     revalidatePath(currentPath)
     return { success: true, isFavorited: true }
   }
@@ -54,7 +52,8 @@ export async function toggleBookmarkAction(blogId: string, currentPath: string) 
   const user = await getServerUser()
 
   if (!user || !user.id) {
-    throw new Error('Please login to bookmark.')
+    // ✅ Return error object here as well
+    return { error: 'Please login to bookmark.' }
   }
 
   const existingBookmark = await payload.find({
@@ -70,7 +69,6 @@ export async function toggleBookmarkAction(blogId: string, currentPath: string) 
       collection: 'bookmarks',
       id: existingBookmark.docs[0].id,
     })
-    // revalidateTag('user-data')
     revalidatePath(currentPath)
     return { success: true, isBookmarked: false }
   } else {
@@ -81,7 +79,6 @@ export async function toggleBookmarkAction(blogId: string, currentPath: string) 
         blog: blogId,
       },
     })
-    // revalidateTag('user-data')
     revalidatePath(currentPath)
     return { success: true, isBookmarked: true }
   }

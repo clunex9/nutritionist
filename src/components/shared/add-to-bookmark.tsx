@@ -3,8 +3,8 @@
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toast'
 import { useState, useTransition } from 'react'
-import { usePathname } from 'next/navigation' // 👈 1. Pathname import kiya
-import { toggleBookmarkAction } from '@/actions/user.action' // Path check kar lena
+import { usePathname } from 'next/navigation'
+import { toggleBookmarkAction } from '@/actions/user.action'
 
 export default function AddToBookmark({
   id,
@@ -13,35 +13,38 @@ export default function AddToBookmark({
   id: string
   initialBookmarked?: boolean
 }) {
-  const pathname = usePathname() // 👈 2. Current page ka URL nikal liya
+  const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
 
   const handleToggle = () => {
-    // 1. Current state ko pehle save kar lo
     const previousState = isBookmarked
-
-    // 2. Optimistic Update (UI ko turant change karo)
     setIsBookmarked(!previousState)
 
     startTransition(async () => {
       try {
-        // 👇 3. Action call karte waqt pathname bhi pass kar diya
         const result = await toggleBookmarkAction(id, pathname)
 
-        // Server jo final state de, wo set karo
-        setIsBookmarked(result.isBookmarked)
+        // 👇 Agar server ne login error bheja hai
+        if (result?.error) {
+          setIsBookmarked(previousState) // UI revert karo
+          toast.add({
+            type: 'error',
+            title: result.error, // "Please login to bookmark." dikhega
+          })
+          return
+        }
 
+        setIsBookmarked(result.isBookmarked!)
         toast.add({
           type: 'success',
           title: result.isBookmarked ? 'Added to bookmarks.' : 'Removed from bookmarks.',
         })
       } catch (error: any) {
         setIsBookmarked(previousState)
-
         toast.add({
           type: 'error',
-          title: error.message || 'Failed to update bookmark.',
+          title: 'Failed to update bookmark.',
         })
       }
     })

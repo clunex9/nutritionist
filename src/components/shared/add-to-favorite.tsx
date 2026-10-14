@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toast'
 import { useState, useTransition } from 'react'
-import { usePathname } from 'next/navigation' // 👈 1. Pathname import kiya
+import { usePathname } from 'next/navigation'
 import { toggleFavoriteAction } from '@/actions/user.action'
 
 export default function AddToFavorite({
@@ -13,35 +13,38 @@ export default function AddToFavorite({
   id: string
   initialFavorited?: boolean
 }) {
-  const pathname = usePathname() // 👈 2. Current page ka URL nikal liya
+  const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
   const [isFavorited, setIsFavorited] = useState(initialFavorited)
 
   const handleToggle = () => {
-    // 1. Current state ko ek variable me save kar lo
     const previousState = isFavorited
-
-    // 2. Optimistic Update (UI ko turant change karo bina server ka wait kiye)
     setIsFavorited(!previousState)
 
     startTransition(async () => {
       try {
-        // 👇 3. Action call karte waqt pathname bhi pass kar diya
         const result = await toggleFavoriteAction(id, pathname)
 
-        // Server jo final state de, wo set karo
-        setIsFavorited(result.isFavorited)
+        // 👇 Agar server ne login error bheja hai
+        if (result?.error) {
+          setIsFavorited(previousState) // UI revert karo
+          toast.add({
+            type: 'error',
+            title: result.error, // "Please login to add to favorites." dikhega
+          })
+          return
+        }
 
+        setIsFavorited(result.isFavorited!)
         toast.add({
           type: 'success',
           title: result.isFavorited ? 'Added to favorites.' : 'Removed from favorites.',
         })
       } catch (error: any) {
         setIsFavorited(previousState)
-
         toast.add({
           type: 'error',
-          title: error.message || 'Failed to update favorite.',
+          title: 'Failed to update favorite.',
         })
       }
     })
