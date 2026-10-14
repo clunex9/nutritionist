@@ -19,34 +19,38 @@ export default function AddToFavorite({
 
   const handleToggle = () => {
     const previousState = isFavorited
+
+    // Optimistic Update (UI turant change karo)
     setIsFavorited(!previousState)
 
-    startTransition(async () => {
-      try {
-        const result = await toggleFavoriteAction(id, pathname)
+    // Ek custom promise banaiye jo toast.promise ko pass ki jayegi
+    const actionPromise = new Promise<{ isFavorited: boolean }>((resolve, reject) => {
+      startTransition(async () => {
+        try {
+          const result = await toggleFavoriteAction(id, pathname)
 
-        // 👇 Agar server ne login error bheja hai
-        if (result?.error) {
+          // Agar user login nahi hai ya koi custom error hai
+          if (result?.error) {
+            setIsFavorited(previousState) // UI revert karo
+            reject(new Error(result.error)) // Reject karne se error toast trigger hoga
+            return
+          }
+
+          // Success par final state set karo aur promise resolve karo
+          setIsFavorited(result.isFavorited!)
+          resolve(result as { isFavorited: boolean })
+        } catch (error: any) {
           setIsFavorited(previousState) // UI revert karo
-          toast.add({
-            type: 'error',
-            title: result.error, // "Please login to add to favorites." dikhega
-          })
-          return
+          reject(new Error('Failed to update favorite.'))
         }
+      })
+    })
 
-        setIsFavorited(result.isFavorited!)
-        toast.add({
-          type: 'success',
-          title: result.isFavorited ? 'Added to favorites.' : 'Removed from favorites.',
-        })
-      } catch (error: any) {
-        setIsFavorited(previousState)
-        toast.add({
-          type: 'error',
-          title: 'Failed to update favorite.',
-        })
-      }
+    // toast.promise ab automatically loading, success, aur error handle karega
+    toast.promise(actionPromise, {
+      loading: 'Updating favorites...',
+      success: (data) => (data.isFavorited ? 'Added to favorites.' : 'Removed from favorites.'),
+      error: (err: Error) => err.message, // "Please login..." yahan print hoga
     })
   }
 
@@ -56,7 +60,7 @@ export default function AddToFavorite({
       disabled={isPending}
       variant="outline"
       size="icon"
-      className="bg-green-95 border-green-85 hover:bg-green-90 size-10 cursor-pointer rounded-sm lg:size-12.5"
+      className={`bg-green-95 border-green-85 hover:bg-green-90 size-10 rounded-sm lg:size-12.5 ${isPending ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
       title="favorite-button"
     >
       <svg

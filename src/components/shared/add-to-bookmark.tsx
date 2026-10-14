@@ -19,34 +19,34 @@ export default function AddToBookmark({
 
   const handleToggle = () => {
     const previousState = isBookmarked
+
+    // Optimistic Update
     setIsBookmarked(!previousState)
 
-    startTransition(async () => {
-      try {
-        const result = await toggleBookmarkAction(id, pathname)
+    const actionPromise = new Promise<{ isBookmarked: boolean }>((resolve, reject) => {
+      startTransition(async () => {
+        try {
+          const result = await toggleBookmarkAction(id, pathname)
 
-        // 👇 Agar server ne login error bheja hai
-        if (result?.error) {
-          setIsBookmarked(previousState) // UI revert karo
-          toast.add({
-            type: 'error',
-            title: result.error, // "Please login to bookmark." dikhega
-          })
-          return
+          if (result?.error) {
+            setIsBookmarked(previousState)
+            reject(new Error(result.error))
+            return
+          }
+
+          setIsBookmarked(result.isBookmarked!)
+          resolve(result as { isBookmarked: boolean })
+        } catch (error: any) {
+          setIsBookmarked(previousState)
+          reject(new Error('Failed to update bookmark.'))
         }
+      })
+    })
 
-        setIsBookmarked(result.isBookmarked!)
-        toast.add({
-          type: 'success',
-          title: result.isBookmarked ? 'Added to bookmarks.' : 'Removed from bookmarks.',
-        })
-      } catch (error: any) {
-        setIsBookmarked(previousState)
-        toast.add({
-          type: 'error',
-          title: 'Failed to update bookmark.',
-        })
-      }
+    toast.promise(actionPromise, {
+      loading: 'Updating bookmarks...',
+      success: (data) => (data.isBookmarked ? 'Added to bookmarks.' : 'Removed from bookmarks.'),
+      error: (err: Error) => err.message, // "Please login to bookmark." yahan dikhega
     })
   }
 
@@ -56,7 +56,7 @@ export default function AddToBookmark({
       disabled={isPending}
       variant="outline"
       size="icon"
-      className="bg-green-95 border-green-85 hover:bg-green-90 size-10 cursor-pointer rounded-sm lg:size-12.5"
+      className={`bg-green-95 border-green-85 hover:bg-green-90 size-10 rounded-sm lg:size-12.5 ${isPending ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
       title="bookmark-button"
     >
       <svg
