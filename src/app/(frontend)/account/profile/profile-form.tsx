@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useTransition } from 'react' // 👈 useTransition add kiya
+import React, { useState, useEffect, useRef, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -74,18 +74,6 @@ export default function ProfileForm({ user }: { user: User | null }) {
     currentAvatarValue === null
       ? undefined // 👈 Agar custom avatar remove kiya, toh Google Avatar check karo
       : newAvatarPreview || avatarObj?.thumbnailURL || avatarObj?.url || undefined
-
-  // 👇 2. Jab bhi Avatar URL change ho toh loading state dobara true kardo
-  useEffect(() => {
-    if (displayAvatar) {
-      // 👇 Check karein ki kya image already browser cache me hai
-      if (avatarImgRef.current?.complete) {
-        setIsAvatarLoading(false) // Cached hai toh pulse mat dikhao
-      } else {
-        setIsAvatarLoading(true) // Nayi image hai toh pulse dikhao
-      }
-    }
-  }, [displayAvatar])
 
   const fullSizeAvatar =
     currentAvatarValue === null
@@ -208,9 +196,9 @@ export default function ProfileForm({ user }: { user: User | null }) {
                   <Avatar className="border-background bg-muted group relative h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 shadow-lg md:h-32 md:w-32">
                     {displayAvatar ? (
                       <>
-                        {/* 👇 3. Pulse Animation (Skeleton) */}
+                        {/* 👇 1. Skeleton ko peeche rakhne ke liye z-0 lagaya */}
                         {isAvatarLoading && (
-                          <div className="absolute inset-0 z-10 h-full w-full animate-pulse bg-gray-200 dark:bg-gray-800" />
+                          <div className="absolute inset-0 z-0 h-full w-full animate-pulse bg-gray-200 dark:bg-gray-800" />
                         )}
 
                         <Image
@@ -221,11 +209,11 @@ export default function ProfileForm({ user }: { user: User | null }) {
                           priority
                           sizes="(max-width: 768px) 112px, 128px"
                           unoptimized
-                          // 👇 4. onLoad set false hone par pulse gayab aur opacity-100 hogi
                           onLoad={() => setIsAvatarLoading(false)}
-                          className={`object-cover transition-all duration-500 group-hover:scale-110 ${
-                            isAvatarLoading ? 'opacity-0' : 'opacity-100'
-                          }`}
+                          // 👇 2. Bug Fix: Yahan setIsAvatarLoading aayega
+                          onError={() => setIsAvatarLoading(false)}
+                          // 👇 3. Opacity logic hata diya aur z-10 lagaya taki image upar rahe
+                          className="z-10 object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       </>
                     ) : (
