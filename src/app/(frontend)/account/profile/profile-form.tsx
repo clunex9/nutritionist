@@ -196,9 +196,21 @@ export default function ProfileForm({ user }: { user: User | null }) {
                   <Avatar className="border-background bg-muted group relative h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 shadow-lg md:h-32 md:w-32">
                     {displayAvatar ? (
                       <>
-                        {/* 👇 1. Skeleton ko peeche rakhne ke liye z-0 lagaya */}
+                        {/* 👇 1. Skeleton with Glass Shine (Shimmer Effect) */}
                         {isAvatarLoading && (
-                          <div className="absolute inset-0 z-0 h-full w-full animate-pulse bg-gray-300/80 dark:bg-gray-700" />
+                          <>
+                            <style>{`
+      @keyframes shimmer {
+        100% { transform: translateX(100%); }
+      }
+    `}</style>
+                            <div className="absolute inset-0 z-0 overflow-hidden bg-gray-200/80 dark:bg-gray-800">
+                              <div
+                                className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/80 to-transparent dark:via-white/20"
+                                style={{ animation: 'shimmer 1.5s infinite' }}
+                              />
+                            </div>
+                          </>
                         )}
 
                         <Image
