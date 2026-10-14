@@ -1,4 +1,4 @@
-// src/app/actions/userActions.ts
+// src/actions/userActions.ts
 'use server'
 
 import { getPayload } from 'payload'

@@ -2,6 +2,20 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { REDIRECT_URL_MAP } from './constants/redirect-url-map'
 
+// Helper: JWT token ki expiration safely check karne ke liye (Edge compatible)
+function isTokenExpired(token: string): boolean {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return true
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'))
+    if (!payload.exp) return false
+    // Current time seconds me (Date.now() ms me hota hai)
+    return Date.now() >= payload.exp * 1000
+  } catch {
+    return true // Agar decode na ho sake toh invalid maan lo
+  }
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -10,29 +24,44 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(REDIRECT_URL_MAP[pathname], request.url))
   }
 
-  // 2️⃣ Auth Token Check
-  // Payload CMS by default 'payload-token' cookie use karta hai.
-  const token = request.cookies.get('payload-token')?.value
+  const tokenCookie = request.cookies.get('payload-token')
+  const token = tokenCookie?.value
 
-  // Routes check karne ke liye boolean flags
+  // 🔒 Token Expired/Invalid check
+  const hasValidToken = token ? !isTokenExpired(token) : false
+
   const isAuthRoute = pathname.startsWith('/auth')
   const isAccountRoute = pathname.startsWith('/account')
 
   // 3️⃣ Route Protection Logic
-  // Condition A: Agar user logged in NAHI hai aur '/account' access karna chahta hai -> Redirect to Sign In
-  if (!token && isAccountRoute) {
+  // Condition A: Agar token nahi hai YA token expire ho chuka hai aur user '/account' par jana chahta hai
+  if (!hasValidToken && isAccountRoute) {
     const signInUrl = new URL('/auth/signin', request.url)
-    signInUrl.searchParams.set('callbackUrl', pathname) // UX Improvement: Login ke baad wapas yahi aayega
-    return NextResponse.redirect(signInUrl)
+    if (pathname !== '/account/profile') {
+      signInUrl.searchParams.set('callbackUrl', pathname)
+    }
+
+    const response = NextResponse.redirect(signInUrl)
+
+    // 🧹 Infinite Loop Prevention: Agar purani kharab/expired cookie padi hai toh use yhi uda do!
+    if (token) {
+      response.cookies.delete('payload-token')
+    }
+    return response
   }
 
-  // Condition B: Agar user logged in HAI aur '/auth' (signin/signup) access karna chahta hai -> Redirect to Account/Profile
-  if (token && isAuthRoute) {
+  // Condition B: Agar valid token HAI aur user '/auth' (signin/signup) par jana chahta hai
+  if (hasValidToken && isAuthRoute) {
     return NextResponse.redirect(new URL('/account/profile', request.url))
   }
 
-  // 4️⃣ Default
-  return NextResponse.next()
+  // Agar invalid token ke sath user kisi public route par bhi hai, toh clean response next() karo
+  const response = NextResponse.next()
+  if (token && !hasValidToken && !isAuthRoute) {
+    response.cookies.delete('payload-token')
+  }
+
+  return response
 }
 
 export const config = {

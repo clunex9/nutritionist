@@ -108,7 +108,6 @@ export default buildConfig({
     },
   },
   onInit: async (payload) => {
-    // ✅ Server start hote hi automatic background cleanup chalu ho jayega
     startUnverifiedUserCleanup(payload)
   },
   email: nodemailerAdapter({
