@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useTransition } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { toast } from '@/components/ui/toast'
 import { FieldError } from '@/components/ui/field'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -24,8 +23,8 @@ import {
 } from '@hugeicons/core-free-icons'
 import { notifyAuthChange } from '@/lib/auth-sync'
 import type { User, Avatar as AvatarType } from '@/payload-types'
-import Image from 'next/image'
 import { updateProfileAction } from '@/actions/account.action'
+import UserAvatar from '@/components/shared/user-avatar'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024 // 2MB
@@ -41,13 +40,9 @@ const profileSchema = z.object({
 
 export default function ProfileForm({ user }: { user: User | null }) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
   const [newAvatarPreview, setNewAvatarPreview] = useState<string | null>(null)
   const [isFullImageLoading, setIsFullImageLoading] = useState(true)
   const fullImgRef = useRef<HTMLImageElement>(null)
-
-  const [isAvatarLoading, setIsAvatarLoading] = useState(true)
-  const avatarImgRef = useRef<HTMLImageElement>(null)
 
   const form = useForm({
     resolver: zodResolver(profileSchema),
@@ -59,7 +54,7 @@ export default function ProfileForm({ user }: { user: User | null }) {
     },
   })
 
-  const { control, handleSubmit, setValue, trigger, watch } = form
+  const { control, handleSubmit, setValue, getValues, trigger, watch } = form
   const currentAvatarValue = watch('avatar')
 
   useEffect(() => {
@@ -73,26 +68,16 @@ export default function ProfileForm({ user }: { user: User | null }) {
   const avatarObj =
     typeof user?.avatar === 'object' && user.avatar !== null ? (user.avatar as AvatarType) : null
 
-  const displayAvatar =
-    currentAvatarValue === null
-      ? undefined
-      : newAvatarPreview || avatarObj?.thumbnailURL || avatarObj?.url || undefined
+  const savedAvatarKey = `${avatarObj?.id ?? ''}:${avatarObj?.updatedAt ?? ''}`
+
+  useEffect(() => {
+    if (getValues('avatar') === null) {
+      setValue('avatar', undefined)
+    }
+  }, [savedAvatarKey, getValues, setValue])
 
   const fullSizeAvatar =
     currentAvatarValue === null ? undefined : newAvatarPreview || avatarObj?.url || undefined
-
-  // 🔥 Fix: Jab displayAvatar change ho ya browser cache se pehle hi loaded ho, shimmer state sync karo
-  useEffect(() => {
-    if (!displayAvatar) {
-      setIsAvatarLoading(false)
-      return
-    }
-    if (avatarImgRef.current?.complete) {
-      setIsAvatarLoading(false)
-    } else {
-      setIsAvatarLoading(true)
-    }
-  }, [displayAvatar])
 
   const initials = user?.name
     ? user.name
@@ -146,8 +131,11 @@ export default function ProfileForm({ user }: { user: User | null }) {
     trigger('avatar')
   }
 
-  const onSubmit = (data: z.infer<typeof profileSchema>) => {
-    if (!user?.id) return toast.add({ type: 'error', title: 'User not found' })
+  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
+    if (!user?.id) {
+      toast.add({ type: 'error', title: 'User not found' })
+      return
+    }
 
     const formData = new FormData()
     formData.append('name', data.name)
@@ -159,39 +147,33 @@ export default function ProfileForm({ user }: { user: User | null }) {
       formData.append('removeAvatar', 'true')
     }
 
-    startTransition(async () => {
-      try {
-        const result = await updateProfileAction(formData)
+    try {
+      const result = await updateProfileAction(formData)
 
-        if (result.success) {
-          toast.add({
-            type: 'success',
-            title: 'Your personal information has been updated successfully.',
-          })
+      if (result.success) {
+        toast.add({
+          type: 'success',
+          title: 'Your personal information has been updated successfully.',
+        })
 
-          // Preview blob cleanup after server save
-          if (newAvatarPreview) {
-            URL.revokeObjectURL(newAvatarPreview)
-            setNewAvatarPreview(null)
-          }
-
+        if (data.avatar instanceof File) {
           setValue('avatar', undefined)
-          notifyAuthChange()
-          router.refresh()
-        } else {
-          toast.add({
-            type: 'error',
-            title: result.error || 'Failed to update profile',
-          })
         }
-      } catch (error) {
-        console.error('Profile Update Error:', error)
+
+        notifyAuthChange()
+        router.refresh()
+      } else {
         toast.add({
           type: 'error',
-          title: 'Failed to save changes. Please check your connection or image size.',
+          title: result.error || 'Failed to update profile',
         })
       }
-    })
+    } catch (error) {
+      toast.add({
+        type: 'error',
+        title: 'Failed to save changes. Please check your connection or image size.',
+      })
+    }
   }
 
   const hasAvatarToRemove = Boolean(user?.avatar || newAvatarPreview) && currentAvatarValue !== null
@@ -238,52 +220,23 @@ export default function ProfileForm({ user }: { user: User | null }) {
                 }}
               >
                 <DialogTrigger>
-                  <Avatar className="border-background bg-muted group relative h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 shadow-lg md:h-32 md:w-32">
-                    {displayAvatar ? (
-                      <>
-                        {isAvatarLoading && (
-                          <>
-                            <style>{`
-                              @keyframes smooth-shimmer {
-                                0% { transform: translateX(-150%) skewX(-15deg); }
-                                100% { transform: translateX(150%) skewX(-15deg); }
-                              }
-                            `}</style>
-                            <div className="absolute inset-0 z-0 overflow-hidden bg-gray-300/60 dark:bg-gray-800">
-                              <div
-                                className="absolute inset-0 h-full w-full bg-linear-to-r from-transparent via-white to-transparent opacity-90 dark:via-white/30"
-                                style={{ animation: 'smooth-shimmer 2s infinite ease-in-out' }}
-                              />
-                            </div>
-                          </>
-                        )}
-
-                        <Image
-                          ref={avatarImgRef}
-                          src={displayAvatar}
-                          alt={user?.name || 'User profile avatar'}
-                          fill
-                          priority
-                          sizes="(max-width: 768px) 112px, 128px"
-                          unoptimized={Boolean(newAvatarPreview)}
-                          onLoad={() => setIsAvatarLoading(false)}
-                          onError={() => setIsAvatarLoading(false)}
-                          className="z-10 object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </>
-                    ) : (
-                      <AvatarFallback className="bg-transparent text-4xl">
-                        {initials}
-                      </AvatarFallback>
-                    )}
-
+                  <UserAvatar
+                    user={user}
+                    src={newAvatarPreview}
+                    removed={currentAvatarValue === null}
+                    sizes="(max-width: 768px) 112px, 128px"
+                    unoptimized={Boolean(newAvatarPreview)}
+                    className="border-background bg-muted group h-28 w-28 shrink-0 cursor-pointer rounded-full border-4 shadow-lg md:h-32 md:w-32"
+                    fallbackClassName="text-foreground text-4xl"
+                    imageClassName="transition-transform duration-500 group-hover:scale-110"
+                  >
                     <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                       <HugeiconsIcon
                         icon={ViewIcon}
                         className="h-8 w-8 text-white/90 drop-shadow-md"
                       />
                     </div>
-                  </Avatar>
+                  </UserAvatar>
                 </DialogTrigger>
 
                 <DialogContent className="flex w-fit max-w-[95vw] items-center justify-center rounded-md border-none bg-transparent p-0 shadow-none outline-none md:max-w-[95vw] [&>button]:hidden">
@@ -449,10 +402,10 @@ export default function ProfileForm({ user }: { user: User | null }) {
             <div className="border-border/40 flex items-center justify-end border-t bg-gray-50/50 p-6 md:p-10">
               <Button
                 type="submit"
-                disabled={isPending}
+                disabled={form.formState.isSubmitting}
                 className="bg-dark-green-20 hover:bg-dark-green-25 text-green-95 h-14 w-full rounded-4xl px-10 text-base font-bold shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl sm:w-auto"
               >
-                {isPending ? 'Saving Changes...' : 'Save Changes'}
+                {form.formState.isSubmitting ? 'Saving Changes...' : 'Save Changes'}
               </Button>
             </div>
           </form>

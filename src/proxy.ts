@@ -55,9 +55,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/account/profile', request.url))
   }
 
-  // Agar invalid token ke sath user kisi public route par bhi hai, toh clean response next() karo
+  // ✅ FIX: Agar invalid/expired token ke sath user kisi bhi route (Public ya Auth) par hai, toh cookie delete karo
   const response = NextResponse.next()
-  if (token && !hasValidToken && !isAuthRoute) {
+  if (token && !hasValidToken) {
     response.cookies.delete('payload-token')
   }
 

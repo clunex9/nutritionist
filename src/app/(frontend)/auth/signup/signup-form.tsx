@@ -99,7 +99,6 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       }
     } catch (error) {
       toast.add({ type: 'error', title: 'Something went wrong. Please try again.' })
-      console.error('Signup Error:', error)
     }
   }
 

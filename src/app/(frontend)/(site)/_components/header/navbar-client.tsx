@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useRef, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,10 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
 import { hasCmsAccess } from '@/access/roles'
 import { useScrollLock } from '@/hooks/use-scroll-lock'
-// import { useHeadroom } from '@/hooks/use-headroom'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Bookmark01Icon,
@@ -29,15 +26,13 @@ import {
   XIcon,
   LoaderCircleIcon,
 } from '@hugeicons/core-free-icons'
-
 import { toast } from '@/components/ui/toast'
 import Logo from '@/components/shared/logo'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { logoutAction } from '@/actions/auth.action'
 import { notifyAuthChange } from '@/lib/auth-sync'
-import type { User, Avatar as AvatarType } from '@/payload-types'
-import Image from 'next/image'
+import type { User } from '@/payload-types'
 import { cn } from 'cn'
+import UserAvatar from '@/components/shared/user-avatar'
 
 const navlinks: { name: string; url: string }[] = [
   { name: 'Home', url: '/' },
@@ -52,20 +47,9 @@ const navlinks: { name: string; url: string }[] = [
 export default function NavbarClient({ user }: { user: User | null }) {
   const pathname = usePathname()
   const router = useRouter()
-  // const headerRef = useRef<HTMLDivElement>(null)
-
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-
   const [isLoggingOut, startLogout] = useTransition()
-
-  useScrollLock(isMenuOpen)
-  // useHeadroom(headerRef)
-
-  const avatarObj =
-    typeof user?.avatar === 'object' && user.avatar !== null ? (user.avatar as AvatarType) : null
-
-  const displayAvatar = avatarObj?.thumbnailURL || avatarObj?.url || undefined
 
   const handleLogout = (e?: React.MouseEvent) => {
     if (e) e.preventDefault()
@@ -86,18 +70,6 @@ export default function NavbarClient({ user }: { user: User | null }) {
     })
   }
 
-  const initials = user?.name
-    ? user.name
-        .trim()
-        .split(/\s+/)
-        .map((n: string) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase()
-    : 'U'
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
-
   const handleLinkClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
     url: string,
@@ -110,11 +82,11 @@ export default function NavbarClient({ user }: { user: User | null }) {
     }
   }
 
+  useScrollLock(isMenuOpen)
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+
   return (
-    <nav
-      // ref={headerRef}
-      className="bg-dark-green-15 sticky top-0 z-50 w-full shadow-sm"
-    >
+    <nav className="bg-dark-green-15 sticky top-0 z-50 w-full shadow-sm">
       <div className="container flex h-17.5 items-center justify-between">
         {/* Logo Section */}
         <Link
@@ -130,7 +102,6 @@ export default function NavbarClient({ user }: { user: User | null }) {
         <div className="hidden md:block">
           <ul className="flex items-center gap-6">
             {navlinks.map(({ name, url }) => {
-              // 👇 Yahan logic update kiya gaya hai parent route check karne ke liye
               const isActive =
                 url === '/' ? pathname === url : pathname === url || pathname.startsWith(`${url}/`)
 
@@ -158,22 +129,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
                   <DropdownMenuTrigger
                     render={
                       <Button variant="ghost" size="icon" className="rounded-full">
-                        <Avatar className="bg-dark-green-20 relative overflow-hidden rounded-full">
-                          {displayAvatar ? (
-                            <Image
-                              src={displayAvatar}
-                              alt={user?.name || 'User'}
-                              fill
-                              priority
-                              sizes="40px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <AvatarFallback className="text-green-95 bg-transparent">
-                              {initials}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
+                        <UserAvatar user={user} className="rounded-full" />
                       </Button>
                     }
                   />
@@ -185,22 +141,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
                     <DropdownMenuGroup>
                       <DropdownMenuLabel>
                         <div className="flex items-center gap-3 text-left text-sm">
-                          <Avatar className="bg-dark-green-20 relative overflow-hidden rounded-md">
-                            {displayAvatar ? (
-                              <Image
-                                src={displayAvatar}
-                                alt={user?.name || 'User'}
-                                fill
-                                priority
-                                sizes="40px"
-                                className="object-cover"
-                              />
-                            ) : (
-                              <AvatarFallback className="text-green-95 bg-transparent">
-                                {initials}
-                              </AvatarFallback>
-                            )}
-                          </Avatar>
+                          <UserAvatar user={user} />
                           <div className="grid flex-1 text-left leading-tight">
                             <span className="text-green-97 truncate text-sm font-medium">
                               {user.name}
@@ -218,7 +159,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
                       <DropdownMenuItem className="text-green-97 focus:bg-dark-green-20! focus:text-green-97! focus:**:text-green-97! cursor-pointer p-0! transition-colors">
                         <Link href="/cms" className="flex w-full items-center gap-2 px-2 py-1">
                           <HugeiconsIcon icon={LayoutDashboardIcon} size={16} />
-                          <span>CMS</span>
+                          <span>cms</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -317,7 +258,6 @@ export default function NavbarClient({ user }: { user: User | null }) {
           <div className="flex-1 overflow-y-auto px-10 pt-28 pb-8">
             <ul className="flex flex-col gap-7">
               {navlinks.map(({ name, url }) => {
-                // 👇 Mobile menu ke liye bhi logic update kiya gaya hai
                 const isActive =
                   url === '/'
                     ? pathname === url
@@ -364,22 +304,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
                     onClick={() => setIsMenuOpen(false)}
                     className="group flex items-center gap-3"
                   >
-                    <Avatar className="bg-dark-green-20 relative overflow-hidden rounded-md">
-                      {displayAvatar ? (
-                        <Image
-                          src={displayAvatar}
-                          alt={user?.name || 'User'}
-                          fill
-                          priority
-                          sizes="40px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback className="text-green-95 bg-transparent">
-                          {initials}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
+                    <UserAvatar user={user} />
                     <div className="flex flex-col leading-tight">
                       <span className="group-hover:text-green-70 text-sm font-medium text-white transition-colors">
                         {user.name}
