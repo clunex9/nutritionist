@@ -19,7 +19,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           {...props}
           ref={ref}
           type={showPassword ? 'text' : 'password'}
-          className={`py-4 pr-10 ${className || ''}`} // pr-10 taaki text icon ke peeche na chhup jaye
+          className={`pr-10 ${className || ''}`} // pr-10 taaki text icon ke peeche na chhup jaye
         />
         <button
           type="button"

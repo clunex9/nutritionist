@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
                 required
                 id="password"
                 autoComplete="new-password"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 h-10 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
                 buttonClassName="text-dark-green-40 hover:text-green-97"
               />
               {/* 👇 Zod error show karne ke liye */}
@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
                 required
                 id="confirmPassword"
                 autoComplete="new-password"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 h-10 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
                 buttonClassName="text-dark-green-40 hover:text-green-97"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
             type="submit"
             form="reset-form"
             disabled={isPending} // 👈 isPending use kiya
-            className="bg-green-70 hover:bg-green-80 text-foreground h-auto w-full rounded-sm py-2 font-semibold"
+            className="bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold"
           >
             {isPending ? 'Updating...' : 'Update Password'}
           </Button>

@@ -432,7 +432,7 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck="false"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm py-4 transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 h-10 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -461,7 +461,7 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
                 tabIndex={2}
                 id="password"
                 autoComplete="current-password"
-                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
+                className="bg-dark-green-20 border-dark-green-25 text-green-97 placeholder:text-dark-green-40 focus-visible:border-dark-green-40 focus-visible:ring-dark-green-20 focus-visible:ring-offset-dark-green-20 h-10 rounded-sm transition-all duration-300 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:white] focus-visible:ring-offset-2"
                 buttonClassName="text-dark-green-40 hover:text-green-97"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -473,7 +473,7 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
           <Button
             type="submit"
             disabled={form.formState.isSubmitting}
-            className="bg-green-70 hover:bg-green-80 text-foreground h-auto w-full rounded-sm py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+            className="bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
           >
             {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
           </Button>
@@ -492,9 +492,46 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
               setIsGoogleLoading(true)
               window.location.href = `/api/auth/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
             }}
-            className="bg-dark-green-20 border-dark-green-25 hover:bg-dark-green-25 text-green-97 hover:text-green-97 h-auto w-full cursor-pointer rounded-sm py-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="bg-dark-green-20 border-dark-green-25 hover:bg-dark-green-25 text-green-97 hover:text-green-97 h-10 w-full cursor-pointer rounded-sm disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {isGoogleLoading ? 'Connecting to Google...' : 'Login with Google'}
+            {isGoogleLoading ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="text-green-70 h-5 w-5 animate-spin"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-20"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Connecting to Google...
+              </span>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="text-green-70 mr-2 h-5 w-5"
+                >
+                  <path
+                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                    fill="currentColor"
+                  />
+                </svg>
+                Continue with Google
+              </>
+            )}
           </Button>
           <FieldDescription className="text-dark-green-80 mt-4 text-center">
             Don&apos;t have an account?{' '}
@@ -503,6 +540,15 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
               className="hover:text-green-97! font-medium underline underline-offset-4"
             >
               Sign up
+            </Link>
+          </FieldDescription>
+          <FieldDescription className="text-dark-green-80 mt-4 text-center">
+            Didn&apos;t verify your email?{' '}
+            <Link
+              href={`/auth/verify-email/resend`}
+              className="hover:text-green-97! font-medium underline underline-offset-4"
+            >
+              Resend verification link
             </Link>
           </FieldDescription>
         </Field>
