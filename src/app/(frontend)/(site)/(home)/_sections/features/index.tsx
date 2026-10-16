@@ -1,66 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-gsap.registerPlugin(ScrollTrigger)
-
 export default function Features() {
-  const featuresRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // 1. Section Header Animation
-      gsap.to('.features-header > *', {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.features-header',
-          start: 'top 80%', // 🔥 Jab header screen ke andar enter kare
-          toggleActions: 'play none none reverse',
-        },
-      })
-
-      // 2. Card ka Outer Box (Background aur Border)
-      gsap.utils.toArray<HTMLElement>('.feature-card').forEach((card) => {
-        gsap.to(card, {
-          y: 0,
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 85%', // 🔥 Jaise hi card ka dabba screen touch kare
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-
-      // 3. Card ke andar ka Content (Title, Icon, Description)
-      // Yeh tabhi aayenge jab inka specific hissa screen mein aayega
-      gsap.utils.toArray<HTMLElement>('.animate-item').forEach((item) => {
-        gsap.to(item, {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 90%', // 🔥 Jab yeh item screen ke thoda andar aa jaye tab trigger ho
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-    }, featuresRef)
-
-    return () => ctx.revert()
-  }, [])
-
   const featuresData = [
     {
       icon: (
@@ -204,27 +146,22 @@ export default function Features() {
   ]
 
   return (
-    <section ref={featuresRef} id="features" className="scroll-mt-10 py-7.5 lg:py-10">
-      {/* Step 1: Header Animation Target */}
-      <div className="features-header container">
-        <h2 className="text-gray-15 translate-y-10 text-center text-[28px] font-bold opacity-0 lg:text-[38px]">
-          Features
-        </h2>
-        <p className="text-gray-20 mt-2 translate-y-10 text-center text-sm opacity-0 lg:text-[16px]">
+    <section id="features" className="scroll-mt-10 py-7.5 lg:py-10">
+      {/* Header */}
+      <div className="container">
+        <h2 className="text-gray-15 text-center text-[28px] font-bold lg:text-[38px]">Features</h2>
+        <p className="text-gray-20 mt-2 text-center text-sm lg:text-[16px]">
           Welcome to the Feature Section of Nutritionist, your ultimate destination for all things
           nutrition and wellness.
         </p>
       </div>
 
-      {/* Step 2 & 3: Cards & Content Animation Target */}
+      {/* Cards */}
       <div className="container mt-7.5 grid grid-cols-1 gap-5 md:grid-cols-2">
         {featuresData.map(({ icon, title, description }, index) => (
-          <Card
-            key={index}
-            className="feature-card border-green-85 bg-green-95 translate-y-10 rounded-lg border p-7.5 opacity-0 ring-0"
-          >
+          <Card key={index} className="border-green-85 bg-green-95 rounded-lg border p-7.5 ring-0">
             <CardHeader className="p-0">
-              <CardTitle className="animate-item flex translate-y-6 items-center gap-4 opacity-0">
+              <CardTitle className="flex items-center gap-4">
                 <div className="bg-green-70 hover:bg-green-70 flex size-9 shrink-0 items-center justify-center rounded-sm border-none p-2 lg:size-12">
                   {icon}
                 </div>
@@ -234,7 +171,7 @@ export default function Features() {
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="animate-item mt-3 translate-y-6 p-0 opacity-0">
+            <CardContent className="mt-3 p-0">
               <p className="text-gray-20 text-sm font-medium lg:text-[16px]">{description}</p>
             </CardContent>
           </Card>

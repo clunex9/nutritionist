@@ -12,12 +12,9 @@ import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/toast'
 import Link from 'next/link'
 import { Controller, useForm } from 'react-hook-form'
-import { useTransition } from 'react' // 👈 useTransition import kiya
 import z from 'zod' // 👈 Zod import kiya
 import { zodResolver } from '@hookform/resolvers/zod'
 import { forgotPasswordAction } from '@/actions/auth.action'
-
-// 👇 Apni nayi Server Action import ki
 
 // ✅ Schema (Email format validate karne ke liye)
 const formSchema = z.object({
@@ -25,9 +22,6 @@ const formSchema = z.object({
 })
 
 export default function ForgotPasswordPage() {
-  // 👇 Native React loading state
-  const [isPending, startTransition] = useTransition()
-
   // 👇 Zod resolver form mein add kiya
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,9 +30,9 @@ export default function ForgotPasswordPage() {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     // 👇 Action call
-    startTransition(async () => {
+    try {
       const result = await forgotPasswordAction(data)
 
       if (result.success) {
@@ -47,7 +41,9 @@ export default function ForgotPasswordPage() {
       } else {
         toast.add({ type: 'error', title: result.error })
       }
-    })
+    } catch (error) {
+      toast.add({ type: 'error', title: 'Something went wrong. Please try again.' })
+    }
   }
 
   return (
@@ -73,7 +69,6 @@ export default function ForgotPasswordPage() {
               <Input
                 {...field}
                 id="email"
-                required
                 type="email"
                 placeholder="m@example.com"
                 autoComplete="email"
@@ -89,22 +84,21 @@ export default function ForgotPasswordPage() {
           <Button
             type="submit"
             form="forgot-form"
-            disabled={isPending} // 👈 isPending use kiya
+            disabled={form.formState.isSubmitting} // 👈 isPending use kiya
             className="bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold"
           >
-            {isPending ? 'Sending reset link...' : 'Send Reset Link'}
+            {form.formState.isSubmitting ? 'Sending reset link...' : 'Send Reset Link'}
           </Button>
+          <FieldDescription className="text-dark-green-80 text-center">
+            Remember your password?{' '}
+            <Link
+              href="/auth/signin"
+              className="hover:text-green-97! font-medium underline underline-offset-4"
+            >
+              Back to Sign In
+            </Link>
+          </FieldDescription>
         </Field>
-
-        <FieldDescription className="text-dark-green-80 mt-4 text-center">
-          Remember your password?{' '}
-          <Link
-            href="/auth/signin"
-            className="hover:text-green-97! font-medium underline underline-offset-4"
-          >
-            Back to Sign In
-          </Link>
-        </FieldDescription>
       </FieldGroup>
     </form>
   )

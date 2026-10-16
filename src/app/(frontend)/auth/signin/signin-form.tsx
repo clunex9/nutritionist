@@ -418,9 +418,17 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel htmlFor="email" className="text-green-97">
-                Email
-              </FieldLabel>
+              <div className="flex items-center">
+                <FieldLabel htmlFor="email" className="text-green-97">
+                  Email
+                </FieldLabel>
+                <Link
+                  href="/auth/verify-email/resend"
+                  className="text-green-97 ml-auto inline-block text-xs underline-offset-4 hover:underline"
+                >
+                  Verify your email?
+                </Link>
+              </div>
               <Input
                 {...field}
                 id="email"
@@ -533,22 +541,13 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
               </>
             )}
           </Button>
-          <FieldDescription className="text-dark-green-80 mt-4 text-center">
+          <FieldDescription className="text-dark-green-80 text-center">
             Don&apos;t have an account?{' '}
             <Link
               href={`/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
               className="hover:text-green-97! font-medium underline underline-offset-4"
             >
               Sign up
-            </Link>
-          </FieldDescription>
-          <FieldDescription className="text-dark-green-80 mt-4 text-center">
-            Didn&apos;t verify your email?{' '}
-            <Link
-              href={`/auth/verify-email/resend`}
-              className="hover:text-green-97! font-medium underline underline-offset-4"
-            >
-              Resend verification link
             </Link>
           </FieldDescription>
         </Field>

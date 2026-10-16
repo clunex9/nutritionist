@@ -302,7 +302,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
               </>
             )}
           </Button>
-          <FieldDescription className="text-dark-green-80 mt-4 text-center">
+          <FieldDescription className="text-dark-green-80 text-center">
             Already have an account?{' '}
             <Link
               href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}

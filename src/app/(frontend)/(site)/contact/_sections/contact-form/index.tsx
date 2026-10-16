@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Controller, useForm } from 'react-hook-form'
 import * as z from 'zod'
@@ -12,6 +11,7 @@ import Link from 'next/link'
 
 import { toast } from '@/components/ui/toast'
 import { submitContactForm } from '@/actions/contact.action'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 
 const formSchema = z.object({
   name: z
@@ -140,116 +140,124 @@ export default function ContactForm() {
         <Card className="bg-green-95 border-green-85 w-full rounded-lg border p-7.5 ring-0 md:p-10 lg:p-15">
           <CardContent className="grid grid-cols-1 gap-10 p-0 md:grid-cols-2">
             {/* Left Side - Form */}
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-30 font-semibold">
-                    Full Name
-                  </Label>
+            <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+              <FieldGroup>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <Controller
                     name="name"
                     control={form.control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="name"
-                        required
-                        placeholder="Enter your Name"
-                        className="bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 rounded-sm border p-5 transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3"
-                      />
+                    render={({ field, fieldState }) => (
+                      <Field>
+                        <FieldLabel htmlFor="name" className="text-gray-30 font-semibold">
+                          Full Name
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          id="name"
+                          required
+                          placeholder="Enter your Name"
+                          className="bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 h-10 rounded-sm border transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3"
+                        />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
                     )}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-30 font-semibold">
-                    Email
-                  </Label>
                   <Controller
                     name="email"
                     control={form.control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="email"
-                        type="email"
-                        required
-                        placeholder="Enter your Email"
-                        className="bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 rounded-sm border p-5 transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3"
-                      />
+                    render={({ field, fieldState }) => (
+                      <Field>
+                        <FieldLabel htmlFor="email" className="text-gray-30 font-semibold">
+                          Email
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          id="email"
+                          type="email"
+                          required
+                          placeholder="Enter your Email"
+                          className="bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 h-10 rounded-sm border transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3"
+                        />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
                     )}
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-gray-30 font-semibold">
-                  Phone Number
-                </Label>
-                <Controller
-                  name="phone"
-                  control={form.control}
-                  render={({ field, fieldState: { error } }) => (
-                    <Input
-                      {...field}
-                      id="phone"
-                      type="tel"
-                      required
-                      inputMode="numeric"
-                      placeholder="Enter your Number"
-                      className="bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 rounded-sm border p-5 transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3"
-                      onChange={(e) => {
-                        // सिर्फ नंबर्स (0-9) को अलाव करें, बाकी सब हटा दें
-                        const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                        // उस क्लीन वैल्यू को react-hook-form में पास करें
-                        field.onChange(numericValue)
-                      }}
-                    />
-                  )}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Controller
+                    name="phone"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field>
+                        <FieldLabel htmlFor="phone" className="text-gray-30 font-semibold">
+                          Phone Number
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          id="phone"
+                          type="tel"
+                          required
+                          inputMode="numeric"
+                          placeholder="Enter your Number"
+                          className="bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 h-10 rounded-sm border transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3"
+                          onChange={(e) => {
+                            // सिर्फ नंबर्स (0-9) को अलाव करें, बाकी सब हटा दें
+                            const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                            // उस क्लीन वैल्यू को react-hook-form में पास करें
+                            field.onChange(numericValue)
+                          }}
+                        />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="message" className="text-gray-30 font-semibold">
-                  Message
-                </Label>
-                <Controller
-                  name="message"
-                  control={form.control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Textarea
-                        {...field}
-                        id="message"
-                        placeholder="Enter your Message"
-                        maxLength={250}
-                        required
-                        className={`bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 min-h-45 resize-none rounded-sm border p-5 transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3 xl:min-h-48 2xl:min-h-73`}
-                      />
+                <div className="space-y-2">
+                  <Controller
+                    name="message"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field>
+                        <FieldLabel htmlFor="message" className="text-gray-30 font-semibold">
+                          Message
+                        </FieldLabel>
+                        <Textarea
+                          {...field}
+                          id="message"
+                          placeholder="Enter your Message"
+                          maxLength={250}
+                          required
+                          className={`bg-green-90 border-green-80 focus-visible:ring-green-90 focus-visible:border-green-70 h-10 min-h-45 resize-none rounded-sm border transition-all duration-200 ease-in-out autofill:transition-colors autofill:duration-[9999s] autofill:[-webkit-text-fill-color:black] focus-visible:ring-3 xl:min-h-48 2xl:min-h-73`}
+                        />
 
-                      <div className="flex items-start justify-between pt-1">
-                        {/* Dynamic Character Count */}
-                        <div className="ml-auto text-right text-sm text-gray-500">
-                          {field.value?.length || 0} / 250
+                        <div className="flex items-start justify-between">
+                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                          <div className="ml-auto text-right text-sm text-gray-500">
+                            {field.value?.length || 0} / 250
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                />
-              </div>
+                      </Field>
+                    )}
+                  />
+                </div>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-green-70 hover:bg-green-80 text-gray-15 h-12 w-full cursor-pointer rounded-sm text-base font-semibold"
-              >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </Button>
+                <Field>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-green-70 hover:bg-green-80 text-gray-15 h-10 w-full cursor-pointer rounded-sm text-base font-semibold"
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </Field>
+              </FieldGroup>
             </form>
 
             {/* Right Side - Map and Social Icons */}
             <div className="flex flex-col gap-6">
               <div className="grow overflow-hidden rounded-md">
-                {/* <Image src={map} alt="map-img" className="h-full w-full object-cover" /> */}
                 <svg
                   width="560"
                   height="435"
@@ -315,7 +323,7 @@ export default function ContactForm() {
 
 const SocialIcons = () => (
   <>
-    <Button className="bg-green-70 hover:bg-green-80! size-12 rounded-sm text-gray-900">
+    <Button className="bg-green-70 hover:bg-green-80! size-10 rounded-sm text-gray-900">
       <Link href="#">
         <svg
           width="20"
@@ -339,7 +347,7 @@ const SocialIcons = () => (
         </svg>
       </Link>
     </Button>
-    <Button className="bg-green-70 hover:bg-green-80! size-12 rounded-sm p-4 text-gray-900">
+    <Button className="bg-green-70 hover:bg-green-80! size-10 rounded-sm p-4 text-gray-900">
       <Link href="#">
         <svg
           width="20"
@@ -356,7 +364,7 @@ const SocialIcons = () => (
         </svg>
       </Link>
     </Button>
-    <Button className="bg-green-70 hover:bg-green-80! size-12 rounded-sm p-4 text-gray-900">
+    <Button className="bg-green-70 hover:bg-green-80! size-10 rounded-sm p-4 text-gray-900">
       <Link href="#">
         <svg
           width="20"

@@ -1,10 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   Card,
   CardContent,
@@ -18,8 +15,6 @@ import AddToFavorite from '@/components/shared/add-to-favorite'
 import AddToBookmark from '@/components/shared/add-to-bookmark'
 import type { Blog, BlogImage, User, Avatar as AvatarType } from '@/payload-types'
 
-gsap.registerPlugin(ScrollTrigger)
-
 interface BlogsClientProps {
   blogs: Blog[]
   userFavoriteBlogsIds: string[]
@@ -31,67 +26,14 @@ export default function BlogsClient({
   userFavoriteBlogsIds,
   userBookmarkBlogsIds,
 }: BlogsClientProps) {
-  const blogsRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // 1. Section Header Animation
-      gsap.to('.blogs-header > *', {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.blogs-header',
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      })
-
-      // 2. Card ka Outer Box (Frame) animate karna
-      // (Jab card thoda sa bhi screen mein aaye, toh uska background/border dikh jaye)
-      gsap.utils.toArray<HTMLElement>('.blog-card').forEach((card) => {
-        gsap.to(card, {
-          y: 0,
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 85%', // Jaise hi card screen ke bottom ko touch kare
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-
-      // 3. 🔥 MAIN LOGIC: Har individual element (Image, Title, Desc, Footer) ka apna ScrollTrigger
-      gsap.utils.toArray<HTMLElement>('.animate-item').forEach((item) => {
-        gsap.to(item, {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: item, // Element khud apna trigger point banega
-            start: 'top 90%', // Jaise hi yeh specific element screen ke bottom (95%) par aayega, tab animate hoga
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-    }, blogsRef)
-
-    return () => ctx.revert()
-  }, [])
-
   return (
-    <section ref={blogsRef} id="blogs" className="scroll-mt-10 py-10 lg:py-16">
+    <section id="blogs" className="scroll-mt-10 py-10 lg:py-16">
       {/* Header */}
       <div className="blogs-header container">
-        <h2 className="text-gray-15 translate-y-10 text-center text-[28px] font-bold opacity-0 lg:text-[38px]">
+        <h2 className="text-gray-15 text-center text-[28px] font-bold lg:text-[38px]">
           Latest Articles
         </h2>
-        <p className="text-gray-20 mx-auto mt-2 max-w-2xl translate-y-10 text-center text-sm opacity-0 lg:text-[16px]">
+        <p className="text-gray-20 mx-auto mt-2 max-w-2xl text-center text-sm lg:text-[16px]">
           Discover informative and engaging articles written by our team of nutritionists,
           dietitians, and wellness experts.
         </p>
@@ -125,10 +67,10 @@ export default function BlogsClient({
           return (
             <Card
               key={blog.id}
-              className="blog-card border-green-85 bg-green-95 flex translate-y-10 flex-col rounded-lg border p-6 opacity-0 ring-0 lg:p-7.5"
+              className="blog-card border-green-85 bg-green-95 flex flex-col rounded-lg border p-6 ring-0 lg:p-7.5"
             >
-              {/* Cover Image Wrapper - No style changed, only animation class added */}
-              <div className="animate-item relative mb-4 aspect-3/2 w-full translate-y-6 overflow-hidden rounded-lg opacity-0 lg:mb-6">
+              {/* Cover Image Wrapper */}
+              <div className="relative mb-4 aspect-3/2 w-full overflow-hidden rounded-lg lg:mb-6">
                 {finalCoverImageUrl ? (
                   <Image
                     src={finalCoverImageUrl}
@@ -148,7 +90,7 @@ export default function BlogsClient({
               </div>
 
               {/* Card Header */}
-              <CardHeader className="animate-item translate-y-6 p-0 opacity-0">
+              <CardHeader className="p-0">
                 <span className="text-gray-20 text-sm font-medium lg:text-[16px]">
                   {blog.category}
                 </span>
@@ -163,14 +105,14 @@ export default function BlogsClient({
               </CardHeader>
 
               {/* Card Content */}
-              <CardContent className="animate-item mt-3 grow translate-y-6 p-0 opacity-0">
+              <CardContent className="mt-3 grow p-0">
                 <CardDescription className="text-gray-30 line-clamp-3 text-sm leading-relaxed font-medium lg:text-[16px]">
                   {blog.description}
                 </CardDescription>
               </CardContent>
 
               {/* Card Footer */}
-              <CardFooter className="animate-item mt-5 translate-y-6 border-0 p-0 opacity-0">
+              <CardFooter className="mt-5 border-0 p-0">
                 <div className="bg-green-97 border-green-85 flex w-full flex-col items-center justify-between gap-5 rounded-lg border p-4 sm:flex-row">
                   <div className="flex w-full items-center gap-4">
                     <Avatar className="bg-dark-green-15 size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">

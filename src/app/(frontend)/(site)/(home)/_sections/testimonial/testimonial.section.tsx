@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback, useRef } from 'react' // 🔥 useRef added
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
@@ -10,13 +10,8 @@ import { cn } from '@/lib/utils'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@hugeicons/core-free-icons'
 
-import gsap from 'gsap' // 🔥 GSAP imports
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
 import type { Testimonial, TestimonialAvatar } from '@/payload-types'
 import Image from 'next/image'
-
-gsap.registerPlugin(ScrollTrigger) // 🔥 Register Plugin
 
 export default function TestimonialSection({ data = [] }: { data: Testimonial[] }) {
   const [api, setApi] = useState<CarouselApi>()
@@ -24,8 +19,7 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
   const [count, setCount] = useState(0)
   const [isReady, setIsReady] = useState(false)
 
-  const plugin = React.useRef(Autoplay({ delay: 3000, stopOnInteraction: true }))
-  const testimonialRef = useRef<HTMLElement>(null) // 🔥 Animation ke liye Ref
+  const plugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: true }))
 
   const updateCarouselState = useCallback(() => {
     if (!api) return
@@ -46,60 +40,6 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
     }
   }, [api, updateCarouselState])
 
-  // 🔥 GSAP Animation Logic
-  useEffect(() => {
-    // Data check taaki GSAP tabhi chale jab data available ho
-    if (!data || data.length === 0) return
-
-    const ctx = gsap.context(() => {
-      // 1. Section Header Animation
-      gsap.to('.testimonial-header > *', {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.testimonial-header',
-          start: 'top 80%', // Jab header screen mein enter kare
-          toggleActions: 'play none none reverse',
-        },
-      })
-
-      // 2. Card ka Outer Box Animation
-      gsap.utils.toArray<HTMLElement>('.testimonial-card').forEach((card) => {
-        gsap.to(card, {
-          y: 0,
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 85%', // Jaise hi card screen ko touch kare
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-
-      // 3. Andar ka Content & Bottom Controls
-      gsap.utils.toArray<HTMLElement>('.animate-item').forEach((item) => {
-        gsap.to(item, {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 90%', // Thoda sa andar aane par reveal ho
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-    }, testimonialRef)
-
-    return () => ctx.revert()
-  }, [data]) // Data as dependency
-
   let paginationVisibilityClass = ''
   if (data.length <= 1) {
     paginationVisibilityClass = 'hidden'
@@ -112,13 +52,13 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
   if (!data || data.length === 0) return null
 
   return (
-    <section ref={testimonialRef} id="testimonial" className="scroll-mt-10 py-7.5 lg:py-10">
-      {/* 🔥 Testimonial Header Animation Target */}
-      <div className="testimonial-header container">
-        <h2 className="text-gray-15 translate-y-10 text-center text-[28px] font-bold opacity-0 lg:text-[38px]">
+    <section id="testimonial" className="scroll-mt-10 py-7.5 lg:py-10">
+      {/* Header */}
+      <div className="container">
+        <h2 className="text-gray-15 text-center text-[28px] font-bold lg:text-[38px]">
           Our Testimonials
         </h2>
-        <p className="text-gray-20 mx-auto mt-2 max-w-2xl translate-y-10 text-center text-sm opacity-0 lg:text-[16px]">
+        <p className="text-gray-20 mx-auto mt-2 max-w-2xl text-center text-sm lg:text-[16px]">
           Our satisfied clients share their success stories and experiences on their journey to
           better health and well-being.
         </p>
@@ -156,10 +96,9 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
 
               return (
                 <CarouselItem key={id} className="md:basis-1/2 lg:basis-1/3">
-                  {/* 🔥 testimonial-card: initial state translate-y-10 opacity-0 */}
-                  <Card className="testimonial-card border-green-85 bg-green-95 flex h-full translate-y-10 flex-col rounded-lg border opacity-0 ring-0">
+                  <Card className="border-green-85 bg-green-95 flex h-full flex-col rounded-lg border ring-0">
                     {/* Header (Quotes Icon) */}
-                    <CardHeader className="animate-item translate-y-6 px-7.5 opacity-0">
+                    <CardHeader className="px-7.5">
                       <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
                         <path
                           d="M3 28V21.7055C3 19.8953 3.33047 18.0131 3.99142 16.0589C4.67239 14.0842 5.59371 12.2225 6.75536 10.4741C7.93705 8.70501 9.25894 7.21365 10.721 6L15.7682 9.36325C14.5866 11.194 13.5951 13.1071 12.794 15.1024C12.0129 17.0771 11.6323 19.2576 11.6524 21.6438V28H3ZM18.2318 28V21.7055C18.2318 19.8953 18.5622 18.0131 19.2232 16.0589C19.9041 14.0842 20.8255 12.2225 21.9871 10.4741C23.1688 8.70501 24.4907 7.21365 25.9528 6L31 9.36325C29.8183 11.194 28.8269 13.1071 28.0258 15.1024C27.2446 17.0771 26.8641 19.2576 26.8841 21.6438V28H18.2318Z"
@@ -169,12 +108,12 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
                     </CardHeader>
 
                     {/* Content (Review Text) */}
-                    <CardContent className="animate-item flex grow translate-y-6 items-center justify-center px-7.5 opacity-0">
+                    <CardContent className="flex grow items-center justify-center px-7.5">
                       <p className="text-gray-20 font-medium">{review}</p>
                     </CardContent>
 
                     {/* Footer (Avatar & Name) */}
-                    <CardFooter className="animate-item border-green-85 bg-green-95 mt-auto flex translate-y-6 items-center gap-3 px-7.5 py-5 opacity-0">
+                    <CardFooter className="border-green-85 bg-green-95 mt-auto flex items-center gap-3 px-7.5 py-5">
                       <Avatar className="bg-dark-green-15 size-10 shrink-0 rounded-md after:border-0 lg:size-12.5">
                         {avatarUrl ? (
                           <Image
@@ -200,12 +139,9 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
           </CarouselContent>
         </Carousel>
 
-        {/* 🔥 Navigation Controls Container: Yeh bhi animate hoke aayega */}
+        {/* Navigation Controls Container */}
         <div
-          className={cn(
-            'animate-item mt-6 flex translate-y-6 items-center justify-center gap-4 opacity-0',
-            paginationVisibilityClass,
-          )}
+          className={cn('mt-6 flex items-center justify-center gap-4', paginationVisibilityClass)}
         >
           <div
             className="flex items-center gap-4"
