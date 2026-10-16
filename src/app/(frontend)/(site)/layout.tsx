@@ -6,7 +6,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <React.Fragment>
       <Header />
-      <main style={{ viewTransitionName: 'main-content' }}>{children}</main>
+      <main>{children}</main>
       <Footer />
     </React.Fragment>
   )

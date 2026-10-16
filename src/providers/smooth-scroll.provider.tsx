@@ -8,7 +8,7 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother'
 // Plugins register karein
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother)
 
-export default function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
+export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // ScrollSmoother initialize karein
     const smoother = ScrollSmoother.create({

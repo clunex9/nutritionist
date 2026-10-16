@@ -37,13 +37,13 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
   return (
     <html lang="en" suppressHydrationWarning className={urbanist.variable}>
       <body className="bg-green-97 font-sans antialiased">
-        <SmoothScrollProvider>
-          <AuthSyncProvider>
-            <NextTopLoader color="#cbea7b" />
-            <TooltipProvider>{children}</TooltipProvider>
-            <Toaster />
-          </AuthSyncProvider>
-        </SmoothScrollProvider>
+        {/* <SmoothScrollProvider> */}
+        <AuthSyncProvider>
+          <NextTopLoader color="#cbea7b" />
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </AuthSyncProvider>
+        {/* </SmoothScrollProvider> */}
       </body>
     </html>
   )
