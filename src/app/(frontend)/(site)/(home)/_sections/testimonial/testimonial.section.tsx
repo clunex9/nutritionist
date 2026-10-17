@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import type { Testimonial, TestimonialAvatar } from '@/payload-types'
+import UserAvatar from '@/components/shared/user-avatar'
 
 const QuotesIcon = () => (
   <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
@@ -50,29 +51,19 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
       </CardContent>
 
       <CardFooter className="border-green-85 bg-green-95 mt-auto flex items-center gap-3 border-t px-7.5 py-5">
-        <Avatar className="bg-dark-green-15 relative size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">
-          {avatarUrl ? (
-            inView && (
-              <Image
-                src={avatarUrl}
-                alt={clientName || 'Client'}
-                fill
-                sizes="(max-width: 1024px) 40px, 50px"
-                className={cn(
-                  'object-cover transition-opacity duration-300',
-                  hasLoaded ? 'opacity-100' : 'opacity-0',
-                )}
-                onLoad={() => setHasLoaded(true)}
-              />
-            )
-          ) : (
-            <AvatarFallback className="bg-dark-green-15 text-green-95 rounded-md font-bold uppercase">
-              {initials}
-            </AvatarFallback>
-          )}
+        <UserAvatar
+          // Type casting zaroori hai agar TS error de, kyunki clientName string hai
+          user={{ name: clientName } as any}
 
-          {avatarUrl && !hasLoaded && <div className="bg-green-85/40 absolute inset-0" />}
-        </Avatar>
+          // Lazy load strict rakhne ke liye inView ka use
+          src={inView ? avatarUrl : undefined}
+
+          // 🚀 MOST IMPORTANT: priority false rakhna taki lag na ho
+          priority={false}
+
+          sizes="(max-width: 1024px) 40px, 50px"
+          className="size-10 shrink-0 lg:size-12.5"
+        />
         <span className="text-dark-green-15 font-semibold">{clientName}</span>
       </CardFooter>
     </Card>
