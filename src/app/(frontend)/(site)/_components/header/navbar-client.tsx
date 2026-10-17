@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { hasCmsAccess } from '@/access/roles'
-import { useScrollLock } from '@/hooks/use-scroll-lock'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Bookmark01Icon,
@@ -31,7 +30,7 @@ import Logo from '@/components/shared/logo'
 import { logoutAction } from '@/actions/auth.action'
 import { notifyAuthChange } from '@/lib/auth-sync'
 import type { User } from '@/payload-types'
-import { cn } from 'cn'
+import { cn } from '@/lib/utils'
 import UserAvatar from '@/components/shared/user-avatar'
 
 const navlinks: { name: string; url: string }[] = [
@@ -50,47 +49,62 @@ export default function NavbarClient({ user }: { user: User | null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggingOut, startLogout] = useTransition()
+  const canAccessCms = Boolean(user && hasCmsAccess(user))
 
-  const handleLogout = (e?: React.MouseEvent) => {
-    if (e) e.preventDefault()
-    if (isLoggingOut) return
-
-    startLogout(async () => {
-      const result = await logoutAction()
-
-      if (result.success) {
-        toast.add({ type: 'success', title: 'See you again soon! 👋' })
-        setIsMenuOpen(false)
-        setIsDropdownOpen(false)
-        router.push('/')
-        notifyAuthChange()
-      } else {
-        toast.add({ type: 'error', title: 'Failed to logout. Please try again.' })
-      }
-    })
-  }
-
-  const handleLinkClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    url: string,
-    isMobile: boolean = false,
-  ) => {
-    if (isMobile) setIsMenuOpen(false)
-    if (url === pathname) {
-      e.preventDefault()
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+  useEffect(() => {
+    if (!user) {
+      setIsMenuOpen(false)
+      setIsDropdownOpen(false)
     }
-  }
+  }, [user])
 
-  useScrollLock(isMenuOpen)
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const handleLogout = useCallback(
+    (e?: React.MouseEvent) => {
+      if (e) e.preventDefault()
+      if (isLoggingOut) return
+
+      startLogout(async () => {
+        try {
+          const result = await logoutAction()
+
+          if (result?.success) {
+            toast.add({ type: 'success', title: 'See you again soon! 👋' })
+            notifyAuthChange()
+            router.push('/')
+            router.refresh()
+          } else {
+            toast.add({ type: 'error', title: 'Failed to logout. Please try again.' })
+          }
+        } catch {
+          toast.add({ type: 'error', title: 'Network error. Please try again.' })
+        }
+      })
+    },
+    [isLoggingOut, router],
+  )
+
+  const handleLinkClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, url: string, isMobile: boolean = false) => {
+      if (isMobile) setIsMenuOpen(false)
+      if (url === pathname) {
+        e.preventDefault()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    [pathname],
+  )
+
+  const toggleMenu = useCallback(() => {
+    if (isLoggingOut) return
+    setIsMenuOpen((prev) => !prev)
+  }, [isLoggingOut])
 
   return (
     <nav className="bg-dark-green-15 sticky top-0 z-50 w-full shadow-sm">
       <div className="container flex h-17.5 items-center justify-between">
         {/* Logo Section */}
         <Link
-          href={'/'}
+          href="/"
           aria-label="Go to Nutritionist Home"
           className="relative z-40"
           onClick={(e) => handleLinkClick(e, '/')}
@@ -110,7 +124,10 @@ export default function NavbarClient({ user }: { user: User | null }) {
                   <Link
                     href={url}
                     onClick={(e) => handleLinkClick(e, url)}
-                    className={`font-semibold transition-colors ${isActive ? 'text-green-70' : 'text-green-97 hover:text-green-90'}`}
+                    className={cn(
+                      'font-semibold transition-colors',
+                      isActive ? 'text-green-70' : 'text-green-97 hover:text-green-90',
+                    )}
                   >
                     {name}
                   </Link>
@@ -128,8 +145,19 @@ export default function NavbarClient({ user }: { user: User | null }) {
                 >
                   <DropdownMenuTrigger
                     render={
-                      <Button variant="ghost" size="icon" className="rounded-full">
-                        <UserAvatar user={user} className="rounded-full" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Open user menu"
+                        className="rounded-full"
+                      >
+                        <UserAvatar
+                          user={user}
+                          priority={true}
+                          sizes="40px"
+                          className="rounded-full"
+                        />
                       </Button>
                     }
                   />
@@ -141,7 +169,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
                     <DropdownMenuGroup>
                       <DropdownMenuLabel>
                         <div className="flex items-center gap-3 text-left text-sm">
-                          <UserAvatar user={user} />
+                          <UserAvatar user={user} priority={false} showSkeleton={false} />
                           <div className="grid flex-1 text-left leading-tight">
                             <span className="text-green-97 truncate text-sm font-medium">
                               {user.name}
@@ -155,11 +183,11 @@ export default function NavbarClient({ user }: { user: User | null }) {
                     <DropdownMenuSeparator className="bg-white/10" />
 
                     {/* Admin */}
-                    {hasCmsAccess(user) && (
+                    {canAccessCms && (
                       <DropdownMenuItem className="text-green-97 focus:bg-dark-green-20! focus:text-green-97! focus:**:text-green-97! cursor-pointer p-0! transition-colors">
                         <Link href="/cms" className="flex w-full items-center gap-2 px-2 py-1">
                           <HugeiconsIcon icon={LayoutDashboardIcon} size={16} />
-                          <span>cms</span>
+                          <span>CMS</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -217,9 +245,9 @@ export default function NavbarClient({ user }: { user: User | null }) {
                 </DropdownMenu>
               ) : (
                 <Link
-                  aria-label="signin"
+                  aria-label="Sign in"
                   href="/auth/signin"
-                  className="bg-green-70 hover:bg-green-80 text-dark-green-20 flex size-8 items-center justify-center rounded-full font-semibold"
+                  className="bg-green-70 hover:bg-green-80 text-dark-green-20 flex size-8 items-center justify-center rounded-full font-semibold transition-colors"
                 >
                   <HugeiconsIcon icon={UserIcon} size={18} />
                 </Link>
@@ -230,9 +258,11 @@ export default function NavbarClient({ user }: { user: User | null }) {
 
         {/* Mobile Toggle Button */}
         <button
+          type="button"
           className="text-green-97 relative z-110 p-2 transition-transform hover:scale-105 md:hidden"
           onClick={toggleMenu}
-          aria-label="Toggle Menu"
+          aria-label={isMenuOpen ? 'Close Menu' : 'Open Menu'}
+          aria-expanded={isMenuOpen}
         >
           {isMenuOpen ? (
             <HugeiconsIcon icon={XIcon} className="text-green-95" />
@@ -241,18 +271,27 @@ export default function NavbarClient({ user }: { user: User | null }) {
           )}
         </button>
 
-        {/* Backdrop Overlay */}
+        {/* Backdrop Overlay - ✅ Optimized transition-[opacity,visibility] for 60FPS blur */}
         <div
-          className={`fixed inset-0 z-90 bg-black/60 backdrop-blur-sm transition-all duration-400 ease-in-out md:hidden ${
-            isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
-          }`}
+          aria-hidden="true"
+          className={cn(
+            'fixed inset-0 z-90 bg-black/60 backdrop-blur-sm transition-[opacity,visibility] duration-300 ease-in-out md:hidden',
+            isMenuOpen
+              ? 'pointer-events-auto visible opacity-100'
+              : 'pointer-events-none invisible opacity-0',
+          )}
           onClick={toggleMenu}
         />
 
+        {/* Mobile Drawer - ✅ Shadow only rendered when menu is open */}
         <aside
-          className={`bg-dark-green-15 fixed top-0 right-0 z-100 flex h-dvh w-[85%] max-w-85 transform flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.3)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
-            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+          aria-hidden={!isMenuOpen}
+          className={cn(
+            'bg-dark-green-15 fixed top-0 right-0 z-100 flex h-dvh w-[85%] max-w-85 transform flex-col transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden',
+            isMenuOpen
+              ? 'translate-x-0 shadow-[-20px_0_40px_rgba(0,0,0,0.3)]'
+              : 'pointer-events-none translate-x-full',
+          )}
         >
           {/* Main Navigation Links */}
           <div className="flex-1 overflow-y-auto px-10 pt-28 pb-8">
@@ -271,18 +310,20 @@ export default function NavbarClient({ user }: { user: User | null }) {
                       className="group flex w-fit items-center gap-4"
                     >
                       <span
-                        className={`bg-green-70 h-0.5 rounded-full transition-all duration-300 ${
+                        className={cn(
+                          'bg-green-70 h-0.5 rounded-full transition-all duration-300',
                           isActive
                             ? 'w-6 opacity-100'
-                            : 'w-0 opacity-0 group-hover:w-4 group-hover:opacity-50'
-                        }`}
+                            : 'w-0 opacity-0 group-hover:w-4 group-hover:opacity-50',
+                        )}
                       />
                       <span
-                        className={`text-3xl font-black tracking-tight transition-all duration-300 ${
+                        className={cn(
+                          'text-3xl font-black tracking-tight transition-all duration-300',
                           isActive
                             ? 'text-green-70 translate-x-0'
-                            : 'text-white/40 group-hover:translate-x-1 group-hover:text-white/90'
-                        }`}
+                            : 'text-white/40 group-hover:translate-x-1 group-hover:text-white/90',
+                        )}
                       >
                         {name}
                       </span>
@@ -295,37 +336,38 @@ export default function NavbarClient({ user }: { user: User | null }) {
 
           {/* Minimalist User Section at Bottom */}
           <div className="px-10 pb-10">
-            <div className="border-t border-white/10 pt-8">
+            <div className="border-t border-white/10 pt-6">
               {user ? (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
                   {/* Clean Profile Info */}
                   <Link
                     href="/account/profile"
                     onClick={() => setIsMenuOpen(false)}
                     className="group flex items-center gap-3"
                   >
-                    <UserAvatar user={user} />
-                    <div className="flex flex-col leading-tight">
-                      <span className="group-hover:text-green-70 text-sm font-medium text-white transition-colors">
+                    <UserAvatar user={user} priority={false} showSkeleton={false} />
+                    <div className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <span className="group-hover:text-green-70 truncate text-sm font-medium text-white transition-colors">
                         {user.name}
                       </span>
-                      <span className="text-xs text-white/50">{user.email}</span>
+                      <span className="truncate text-xs text-white/50">{user.email}</span>
                     </div>
                   </Link>
 
                   <button
+                    type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="flex w-fit items-center gap-3 font-semibold text-white/50 transition-colors hover:text-red-400 disabled:opacity-50"
+                    className="flex w-fit items-center gap-2.5 text-sm font-semibold text-white/50 transition-colors hover:text-red-400 disabled:opacity-50"
                   >
                     {isLoggingOut ? (
                       <HugeiconsIcon
                         icon={LoaderCircleIcon}
-                        size={20}
+                        size={18}
                         className="animate-spin text-red-400"
                       />
                     ) : (
-                      <HugeiconsIcon icon={LogOutIcon} size={20} />
+                      <HugeiconsIcon icon={LogOutIcon} size={18} />
                     )}
                     {isLoggingOut ? (
                       <span className="text-red-400">Logging out...</span>

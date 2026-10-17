@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo, memo } from 'react'
-import Autoplay from 'embla-carousel-autoplay'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@hugeicons/core-free-icons'
 
@@ -59,15 +58,7 @@ const TestimonialCard = memo(({ item }: { item: Testimonial }) => {
 })
 TestimonialCard.displayName = 'TestimonialCard'
 
-function CarouselControls({
-  api,
-  onMouseEnter,
-  onMouseLeave,
-}: {
-  api: CarouselApi | undefined
-  onMouseEnter: (e: React.PointerEvent<HTMLDivElement>) => void
-  onMouseLeave: (e: React.PointerEvent<HTMLDivElement>) => void
-}) {
+function CarouselControls({ api }: { api: CarouselApi | undefined }) {
   const [current, setCurrent] = useState(0)
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([])
 
@@ -97,84 +88,49 @@ function CarouselControls({
   if (scrollSnaps.length <= 1) return null
 
   return (
-    <div className="mt-6 flex items-center justify-center">
-      <div
-        className="flex items-center justify-center gap-4"
-        onPointerEnter={onMouseEnter}
-        onPointerLeave={onMouseLeave}
+    <div className="mt-6 flex items-center justify-center gap-4">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label="Previous testimonial"
+        onClick={() => api?.scrollPrev()}
+        className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
       >
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label="Previous testimonial"
-          onClick={() => api?.scrollPrev()}
-          className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
-        >
-          <HugeiconsIcon icon={ChevronLeftIcon} />
-        </Button>
+        <HugeiconsIcon icon={ChevronLeftIcon} />
+      </Button>
 
-        <div className="flex justify-center gap-2">
-          {scrollSnaps.map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              aria-label={`Go to slide ${index + 1}`}
-              onClick={() => api?.scrollTo(index)}
-              className={cn(
-                'size-4 rounded-full transition-colors',
-                current === index ? 'bg-dark-green-30' : 'bg-green-75 cursor-pointer',
-              )}
-            />
-          ))}
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label="Next testimonial"
-          onClick={() => api?.scrollNext()}
-          className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
-        >
-          <HugeiconsIcon icon={ChevronRightIcon} />
-        </Button>
+      <div className="flex justify-center gap-2">
+        {scrollSnaps.map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            aria-label={`Go to slide ${index + 1}`}
+            onClick={() => api?.scrollTo(index)}
+            className={cn(
+              'size-4 rounded-full transition-colors',
+              current === index ? 'bg-dark-green-30' : 'bg-green-75 cursor-pointer',
+            )}
+          />
+        ))}
       </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label="Next testimonial"
+        onClick={() => api?.scrollNext()}
+        className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
+      >
+        <HugeiconsIcon icon={ChevronRightIcon} />
+      </Button>
     </div>
   )
 }
 
 export default function TestimonialSection({ data = [] }: { data: Testimonial[] }) {
   const [api, setApi] = useState<CarouselApi>()
-
-  const plugins = useMemo(
-    () => [
-      Autoplay({
-        delay: 2000,
-        stopOnInteraction: false,
-        stopOnMouseEnter: false, // ✅ False rakha hai taaki neeche wala custom pointer handler bina conflict ke kaam kare
-      }),
-    ],
-    [],
-  )
-
-  const handlePointerEnter = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (e.pointerType === 'mouse') {
-        ;(api?.plugins()?.autoplay as any)?.stop()
-      }
-    },
-    [api],
-  )
-
-  const handlePointerLeave = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (e.pointerType === 'mouse') {
-        ;(api?.plugins()?.autoplay as any)?.play()
-      }
-    },
-    [api],
-  )
 
   if (!data?.length) return null
 
@@ -191,28 +147,21 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
       </div>
 
       <div className="container mt-7.5 w-full">
-        <div onPointerEnter={handlePointerEnter} onPointerLeave={handlePointerLeave}>
-          <Carousel
-            setApi={setApi}
-            plugins={plugins}
-            opts={{ align: 'start', loop: data.length > 3, slidesToScroll: 'auto' }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-4">
-              {data.map((item) => (
-                <CarouselItem key={item.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <TestimonialCard item={item} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
+        <Carousel
+          setApi={setApi}
+          opts={{ align: 'start', loop: data.length > 3, slidesToScroll: 'auto' }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {data.map((item) => (
+              <CarouselItem key={item.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                <TestimonialCard item={item} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
 
-        <CarouselControls
-          api={api}
-          onMouseEnter={handlePointerEnter}
-          onMouseLeave={handlePointerLeave}
-        />
+        <CarouselControls api={api} />
       </div>
     </section>
   )
