@@ -50,7 +50,6 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
       </CardContent>
 
       <CardFooter className="border-green-85 bg-green-95 mt-auto flex items-center gap-3 border-t px-7.5 py-5">
-        {/* Overflow hidden zaroori hai avatar shape maintain karne ke liye */}
         <Avatar className="bg-dark-green-15 relative size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">
           {avatarUrl ? (
             inView && (
@@ -72,7 +71,6 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
             </AvatarFallback>
           )}
 
-          {/* Skeleton Loader se 'animate-pulse' hata diya mobile scroll jank fix karne ke liye */}
           {avatarUrl && !hasLoaded && <div className="bg-green-85/40 absolute inset-0" />}
         </Avatar>
         <span className="text-dark-green-15 font-semibold">{clientName}</span>
@@ -109,23 +107,18 @@ function CarouselControls({ api }: { api: CarouselApi | undefined }) {
     }
   }, [api, onInit, onSelect])
 
-  const toggleAutoplay = useCallback(
-    (play: boolean) => {
-      const autoplay = api?.plugins()?.autoplay
-      if (autoplay) play ? autoplay.play() : autoplay.stop()
-    },
-    [api],
-  )
-
   if (scrollSnaps.length <= 1) return null
+
+  // Ye sirf Desktop mouse interaction ke liye hai.
+  // Mobile par Embla ka native plugin khud touch start pe stop aur touch end pe play karta hai.
+  const handleMouseEnter = () => api?.plugins()?.autoplay?.stop()
+  const handleMouseLeave = () => api?.plugins()?.autoplay?.play()
 
   return (
     <div
       className="mt-6 flex items-center justify-center gap-4"
-      onMouseEnter={() => toggleAutoplay(false)}
-      onMouseLeave={() => toggleAutoplay(true)}
-      onFocus={() => toggleAutoplay(false)}
-      onBlur={() => toggleAutoplay(true)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Button
         variant="outline"
@@ -167,9 +160,15 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
   const [api, setApi] = useState<CarouselApi>()
   const [slidesInView, setSlidesInView] = useState<number[]>([])
 
-  // Mobile ke liye stopOnInteraction: true (taki user swipe kare toh autoplay slide se jagda na kare)
   const plugins = useMemo(
-    () => [Autoplay({ delay: 3500, stopOnInteraction: true, stopOnMouseEnter: true })],
+    () => [
+      Autoplay({
+        delay: 3500,
+        // 👇 Sabse bada change yahi hai. False karna zaroori hai mobile touch resume ke liye.
+        stopOnInteraction: false,
+        stopOnMouseEnter: true,
+      }),
+    ],
     [],
   )
 
@@ -196,9 +195,8 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
 
     updateSlidesInView()
 
-    // 🚀 BADA BADLAAV: Mobile lag hatane ke liye hum state ko mid-swipe nahi balki swipe END (select) par update karenge
     api.on('reInit', updateSlidesInView)
-    api.on('select', updateSlidesInView) // Ab mobile pe ungli chhodne ke baad image request jayegi, swipe karte hue lag nahi hoga.
+    api.on('select', updateSlidesInView)
 
     return () => {
       api.off('reInit', updateSlidesInView)
@@ -221,20 +219,26 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
       </div>
 
       <div className="container mt-7.5 w-full">
-        <Carousel
-          setApi={setApi}
-          plugins={plugins}
-          opts={{ align: 'start', loop: data.length > 3, slidesToScroll: 'auto' }}
-          className="w-full"
+        {/* Carousel ke upar bhi mouse enter/leave logic add kar diya taki desktop par slider pe pointer le jaane par autoplay ruk jaye */}
+        <div
+          onMouseEnter={() => api?.plugins()?.autoplay?.stop()}
+          onMouseLeave={() => api?.plugins()?.autoplay?.play()}
         >
-          <CarouselContent className="-ml-4">
-            {data.map((item, index) => (
-              <CarouselItem key={item.id} className="md:basis-1/2 lg:basis-1/3">
-                <TestimonialCard item={item} inView={slidesInView.includes(index)} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+          <Carousel
+            setApi={setApi}
+            plugins={plugins}
+            opts={{ align: 'start', loop: data.length > 3, slidesToScroll: 'auto' }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {data.map((item, index) => (
+                <CarouselItem key={item.id} className="md:basis-1/2 lg:basis-1/3">
+                  <TestimonialCard item={item} inView={slidesInView.includes(index)} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
 
         <CarouselControls api={api} />
       </div>
