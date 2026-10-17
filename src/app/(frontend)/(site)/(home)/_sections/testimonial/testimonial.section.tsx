@@ -1,14 +1,12 @@
 'use client'
 
-import React, { useEffect, useState, useCallback, useMemo, memo } from 'react'
+import { useEffect, useState, useCallback, useMemo, memo } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
-import Image from 'next/image'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@hugeicons/core-free-icons'
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -29,16 +27,6 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
 
   const avatarUrl =
     (avatar as TestimonialAvatar)?.url || (avatar as TestimonialAvatar)?.thumbnailURL || ''
-  const initials = clientName
-    ? clientName
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase()
-    : 'U'
-
-  const [hasLoaded, setHasLoaded] = useState(false)
 
   return (
     <Card className="border-green-85 bg-green-95 flex h-full flex-col rounded-lg border ring-0">
@@ -52,15 +40,10 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
 
       <CardFooter className="border-green-85 bg-green-95 mt-auto flex items-center gap-3 border-t px-7.5 py-5">
         <UserAvatar
-          // Type casting zaroori hai agar TS error de, kyunki clientName string hai
+          key={inView ? 'loaded' : 'unloaded'}
           user={{ name: clientName } as any}
-
-          // Lazy load strict rakhne ke liye inView ka use
           src={inView ? avatarUrl : undefined}
-
-          // 🚀 MOST IMPORTANT: priority false rakhna taki lag na ho
           priority={false}
-
           sizes="(max-width: 1024px) 40px, 50px"
           className="size-10 shrink-0 lg:size-12.5"
         />
@@ -100,8 +83,6 @@ function CarouselControls({ api }: { api: CarouselApi | undefined }) {
 
   if (scrollSnaps.length <= 1) return null
 
-  // Ye sirf Desktop mouse interaction ke liye hai.
-  // Mobile par Embla ka native plugin khud touch start pe stop aur touch end pe play karta hai.
   const handleMouseEnter = () => api?.plugins()?.autoplay?.stop()
   const handleMouseLeave = () => api?.plugins()?.autoplay?.play()
 
@@ -157,7 +138,6 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
     () => [
       Autoplay({
         delay: 3500,
-        // 👇 Sabse bada change yahi hai. False karna zaroori hai mobile touch resume ke liye.
         stopOnInteraction: false,
         stopOnMouseEnter: true,
       }),
@@ -189,11 +169,11 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
     updateSlidesInView()
 
     api.on('reInit', updateSlidesInView)
-    api.on('select', updateSlidesInView)
+    api.on('slidesInView', updateSlidesInView)
 
     return () => {
       api.off('reInit', updateSlidesInView)
-      api.off('select', updateSlidesInView)
+      api.off('slidesInView', updateSlidesInView)
     }
   }, [api])
 
