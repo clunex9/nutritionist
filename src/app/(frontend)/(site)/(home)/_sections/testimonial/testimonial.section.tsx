@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo, memo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo, memo } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
 import Image from 'next/image'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils'
 
 import type { Testimonial, TestimonialAvatar } from '@/payload-types'
 
-// 1. Static SVG Quotes
 const QuotesIcon = () => (
   <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
     <path
@@ -24,7 +23,6 @@ const QuotesIcon = () => (
   </svg>
 )
 
-// 2. Card Component accepting 'inView' prop
 const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boolean }) => {
   const { avatar, clientName, review } = item
 
@@ -39,7 +37,6 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
         .toUpperCase()
     : 'U'
 
-  // Image load state track karne ke liye (smooth fade-in effect)
   const [hasLoaded, setHasLoaded] = useState(false)
 
   return (
@@ -53,9 +50,9 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
       </CardContent>
 
       <CardFooter className="border-green-85 bg-green-95 mt-auto flex items-center gap-3 border-t px-7.5 py-5">
+        {/* Overflow hidden zaroori hai avatar shape maintain karne ke liye */}
         <Avatar className="bg-dark-green-15 relative size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">
           {avatarUrl ? (
-            // Jab 'inView' true hoga, tabhi actual source load hoga
             inView && (
               <Image
                 src={avatarUrl}
@@ -64,7 +61,7 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
                 sizes="(max-width: 1024px) 40px, 50px"
                 className={cn(
                   'object-cover transition-opacity duration-300',
-                  hasLoaded ? 'opacity-100' : 'opacity-0', // Jab image network se fetch ho jayegi, tabhi fade in hogi
+                  hasLoaded ? 'opacity-100' : 'opacity-0',
                 )}
                 onLoad={() => setHasLoaded(true)}
               />
@@ -75,10 +72,8 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
             </AvatarFallback>
           )}
 
-          {/* Skeleton Loader tab tak dikhega jab tak Image load na ho */}
-          {avatarUrl && !hasLoaded && (
-            <div className="bg-green-85 absolute inset-0 animate-pulse" />
-          )}
+          {/* Skeleton Loader se 'animate-pulse' hata diya mobile scroll jank fix karne ke liye */}
+          {avatarUrl && !hasLoaded && <div className="bg-green-85/40 absolute inset-0" />}
         </Avatar>
         <span className="text-dark-green-15 font-semibold">{clientName}</span>
       </CardFooter>
@@ -87,7 +82,6 @@ const TestimonialCard = memo(({ item, inView }: { item: Testimonial; inView: boo
 })
 TestimonialCard.displayName = 'TestimonialCard'
 
-// 3. Controls Component
 function CarouselControls({ api }: { api: CarouselApi | undefined }) {
   const [current, setCurrent] = useState(0)
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([])
@@ -169,26 +163,23 @@ function CarouselControls({ api }: { api: CarouselApi | undefined }) {
   )
 }
 
-// 4. Main Export Component - Lazy Load Logic Yahan Setup Hoga
 export default function TestimonialSection({ data = [] }: { data: Testimonial[] }) {
   const [api, setApi] = useState<CarouselApi>()
-  const [slidesInView, setSlidesInView] = useState<number[]>([]) // Jo slides dikh rahi hain unka track
+  const [slidesInView, setSlidesInView] = useState<number[]>([])
 
+  // Mobile ke liye stopOnInteraction: true (taki user swipe kare toh autoplay slide se jagda na kare)
   const plugins = useMemo(
-    () => [Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })],
+    () => [Autoplay({ delay: 3500, stopOnInteraction: true, stopOnMouseEnter: true })],
     [],
   )
 
-  // Embla API track karke lazy slidesInView array maintain karna
   useEffect(() => {
     if (!api) return
 
     const updateSlidesInView = () => {
-      // API se current visible slides ka array nikalo
       const visibleSlides = api.slidesInView()
 
       setSlidesInView((prev) => {
-        // Sirf nayi visible slides ko purani array me merge karo (Taki ek baar load ho gayi toh unload na ho)
         const inViewArray = [...prev]
         let hasChanged = false
 
@@ -203,16 +194,15 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
       })
     }
 
-    // Initial check on mount
     updateSlidesInView()
 
-    // Jab carousel re-init ho ya slide change ho, wapas check karo
+    // 🚀 BADA BADLAAV: Mobile lag hatane ke liye hum state ko mid-swipe nahi balki swipe END (select) par update karenge
     api.on('reInit', updateSlidesInView)
-    api.on('slidesInView', updateSlidesInView) // Embla explicitly triggers this event
+    api.on('select', updateSlidesInView) // Ab mobile pe ungli chhodne ke baad image request jayegi, swipe karte hue lag nahi hoga.
 
     return () => {
       api.off('reInit', updateSlidesInView)
-      api.off('slidesInView', updateSlidesInView)
+      api.off('select', updateSlidesInView)
     }
   }, [api])
 
@@ -239,8 +229,7 @@ export default function TestimonialSection({ data = [] }: { data: Testimonial[] 
         >
           <CarouselContent className="-ml-4">
             {data.map((item, index) => (
-              <CarouselItem key={item.id} className="transform-gpu md:basis-1/2 lg:basis-1/3">
-                {/* Child component ko inView pass kiya jaa raha hai agar us index ko record kiya gaya hai */}
+              <CarouselItem key={item.id} className="md:basis-1/2 lg:basis-1/3">
                 <TestimonialCard item={item} inView={slidesInView.includes(index)} />
               </CarouselItem>
             ))}
