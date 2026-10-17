@@ -115,43 +115,45 @@ function CarouselControls({ api }: { api: CarouselApi | undefined }) {
   const handleMouseLeave = () => api?.plugins()?.autoplay?.play()
 
   return (
-    <div
-      className="mt-6 flex items-center justify-center gap-4"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => api?.scrollPrev()}
-        className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
+    <div className="mt-6 flex items-center justify-center">
+      <div
+        className="flex items-center justify-center gap-4"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-        <HugeiconsIcon icon={ChevronLeftIcon} />
-      </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => api?.scrollPrev()}
+          className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
+        >
+          <HugeiconsIcon icon={ChevronLeftIcon} />
+        </Button>
 
-      <div className="flex justify-center gap-2">
-        {scrollSnaps.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            aria-label={`Go to slide ${index + 1}`}
-            onClick={() => api?.scrollTo(index)}
-            className={cn(
-              'size-4 rounded-full transition-colors',
-              current === index ? 'bg-dark-green-30' : 'bg-green-75 cursor-pointer',
-            )}
-          />
-        ))}
+        <div className="flex justify-center gap-2">
+          {scrollSnaps.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              aria-label={`Go to slide ${index + 1}`}
+              onClick={() => api?.scrollTo(index)}
+              className={cn(
+                'size-4 rounded-full transition-colors',
+                current === index ? 'bg-dark-green-30' : 'bg-green-75 cursor-pointer',
+              )}
+            />
+          ))}
+        </div>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => api?.scrollNext()}
+          className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
+        >
+          <HugeiconsIcon icon={ChevronRightIcon} />
+        </Button>
       </div>
-
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => api?.scrollNext()}
-        className="border-green-85 bg-green-95 hover:bg-green-90 size-10 rounded-sm lg:size-12.5"
-      >
-        <HugeiconsIcon icon={ChevronRightIcon} />
-      </Button>
     </div>
   )
 }
