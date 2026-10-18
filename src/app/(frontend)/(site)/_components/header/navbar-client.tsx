@@ -49,6 +49,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggingOut, startLogout] = useTransition()
+  const [isLogoutSuccess, setIsLogoutSuccess] = useState(false)
   const canAccessCms = Boolean(user && hasCmsAccess(user))
 
   useEffect(() => {
@@ -57,6 +58,14 @@ export default function NavbarClient({ user }: { user: User | null }) {
       setIsDropdownOpen(false)
     }
   }, [user])
+
+  // Route refresh complete hone par toast dikhane ke liye
+  useEffect(() => {
+    if (!isLoggingOut && isLogoutSuccess) {
+      toast.add({ type: 'success', title: 'See you again soon! 👋 ' })
+      setIsLogoutSuccess(false) // Flag ko wapas reset karein
+    }
+  }, [isLoggingOut, isLogoutSuccess])
 
   const handleLogout = useCallback(
     (e?: React.MouseEvent) => {
@@ -68,7 +77,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
           const result = await logoutAction()
 
           if (result?.success) {
-            toast.add({ type: 'success', title: 'See you again soon! 👋' })
+            setIsLogoutSuccess(true)
             notifyAuthChange()
             router.push('/')
             router.refresh()

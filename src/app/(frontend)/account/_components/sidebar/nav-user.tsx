@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,29 +40,49 @@ export function NavUser({ user }: { user: User }) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoggingOut, startLogout] = useTransition()
+  const [isLogoutSuccess, setIsLogoutSuccess] = useState(false)
   const { isMobile } = useSidebar()
 
-  const handleLogout = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (!user) {
+      setIsOpen(false)
+    }
+  }, [user])
 
-    if (isLoggingOut) return
-
-    startLogout(async () => {
-      const result = await logoutAction()
-
-      if (result.success) {
-        setIsOpen(false)
-        toast.add({
-          type: 'success',
-          title: 'See you again soon! 👋',
-        })
-        router.push('/auth/signin')
-        notifyAuthChange()
-      } else {
-        toast.add({ type: 'error', title: 'Failed to logout. Please try again.' })
+  // Ye useEffect component ke unmount hone par (yani page change hone par) toast trigger karega
+  useEffect(() => {
+    return () => {
+      if (isLogoutSuccess) {
+        toast.add({ type: 'success', title: 'See you again soon! 👋 ' })
       }
-    })
-  }
+    }
+  }, [isLogoutSuccess])
+
+  const handleLogout = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      e.preventDefault()
+
+      if (isLoggingOut) return
+
+      startLogout(async () => {
+        try {
+          const result = await logoutAction()
+
+          if (result?.success) {
+            setIsLogoutSuccess(true)
+            notifyAuthChange()
+            router.push('/auth/signin')
+            router.refresh()
+          } else {
+            toast.add({ type: 'error', title: 'Failed to logout. Please try again.' })
+          }
+        } catch {
+          toast.add({ type: 'error', title: 'Network error. Please try again.' })
+        }
+      })
+    },
+    [isLoggingOut, router],
+  )
 
   return (
     <SidebarMenu>
