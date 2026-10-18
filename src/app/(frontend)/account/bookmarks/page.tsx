@@ -1,3 +1,4 @@
+import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
@@ -7,44 +8,41 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { cookies } from 'next/headers'
 import RemoveButton from '@/components/shared/remove-button'
-import { BlogImage } from '@/payload-types'
+import type { BlogImage } from '@/payload-types'
 
 export default async function BookmarksPage() {
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
 
   if (!token) {
-    return <div className="p-8 text-center">Please login to view your bookmarks.</div>
+    return <div className="p-8 text-center text-gray-500">Please login to view your bookmarks.</div>
   }
 
   const payload = await getPayload({ config: configPromise })
 
-  // 1. Token verify karke user nikala
   const { user } = await payload.auth({
     headers: new Headers({ Authorization: `JWT ${token}` }),
   })
 
   if (!user) {
-    return <div className="p-8 text-center">Session expired. Please login again.</div>
+    return <div className="p-8 text-center text-gray-500">Session expired. Please login again.</div>
   }
 
-  // 2. Direct database se Bookmarks fetch kiye
   const { docs: bookmarks } = await payload.find({
-    collection: 'bookmarks', // 👈 Collection name check kar lena
+    collection: 'bookmarks',
     where: { user: { equals: user.id } },
-    depth: 2, // Blog ka poora data laane ke liye depth 2
+    depth: 2,
+    limit: 50, // 🔥 FIX 1: Heavy payload crash se bachne ke liye limit lagayi
   })
 
   const hasBookmarks = bookmarks && bookmarks.length > 0
 
   return (
     <section
-      // Agar bookmarks nahi hain toh section ko flex banaya aur min-height di
       className={`px-4 py-6 md:px-8 ${
         !hasBookmarks ? 'flex min-h-[calc(100vh-100px)] flex-col' : ''
       }`}
     >
-      {/* shrink-0 lagaya taaki height kam hone par heading compress na ho */}
       <div className="mb-8 shrink-0">
         <h1 className="text-dark-green-20 text-2xl font-black tracking-tight md:text-3xl">
           Saved Bookmarks
@@ -55,7 +53,6 @@ export default async function BookmarksPage() {
       </div>
 
       {!hasBookmarks ? (
-        // flex-1 add kiya aur py-20 remove kiya
         <div className="flex flex-1 flex-col items-center justify-center rounded-3xl border border-dashed border-gray-300 bg-gray-50/50 py-20 text-center">
           <HugeiconsIcon icon={BookmarkIcon} className="mb-4 h-12 w-12 text-gray-300" />
           <h3 className="text-lg font-medium text-gray-500">No bookmarks yet</h3>
@@ -64,7 +61,6 @@ export default async function BookmarksPage() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {bookmarks.map((book: any) => {
             const blog = book.blog
-            // Safely ignore invalid refs
             if (!blog || typeof blog === 'string') return null
 
             const coverImage =
@@ -78,15 +74,17 @@ export default async function BookmarksPage() {
                 key={book.id}
                 className="bg-green-95 border-green-85 group relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
               >
-                {/* 🔴 Client Component Button (Type 'bookmark' pass kiya) */}
+                {/* 🔴 Type 'bookmark' already correct tha */}
                 <RemoveButton blogId={blog.id} type="bookmark" />
 
                 <div className="relative h-48 w-full bg-gray-100">
                   {finalCoverImageUrl ? (
                     <Image
                       src={finalCoverImageUrl}
-                      alt={blog.title}
+                      alt={blog.title || 'Blog cover'}
                       fill
+                      // 🔥 FIX 2: Desktop par unnecessary 100vw image download hone se bachaya
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                     />
                   ) : (

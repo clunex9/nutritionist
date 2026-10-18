@@ -22,7 +22,6 @@ import {
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { notifyAuthChange } from '@/lib/auth-sync'
-import type { User, Avatar as AvatarType } from '@/payload-types'
 import { updateProfileAction } from '@/actions/account.action'
 import UserAvatar from '@/components/shared/user-avatar'
 
@@ -38,7 +37,18 @@ const profileSchema = z.object({
   avatar: z.any().nullable().optional(),
 })
 
-export default function ProfileForm({ user }: { user: User | null }) {
+// 🔥 Naya simple type banaya (No Payload types here!)
+export type CleanUser = {
+  id: string
+  name: string
+  email: string
+  gender: 'male' | 'female' | 'other' | null | undefined
+  avatarUrl: string
+  avatarId: string
+  avatarUpdatedAt: string
+}
+
+export default function ProfileForm({ user }: { user: CleanUser | null }) {
   const router = useRouter()
   const [newAvatarPreview, setNewAvatarPreview] = useState<string | null>(null)
   const [isFullImageLoading, setIsFullImageLoading] = useState(true)
@@ -65,10 +75,8 @@ export default function ProfileForm({ user }: { user: User | null }) {
     }
   }, [newAvatarPreview])
 
-  const avatarObj =
-    typeof user?.avatar === 'object' && user.avatar !== null ? (user.avatar as AvatarType) : null
-
-  const savedAvatarKey = `${avatarObj?.id ?? ''}:${avatarObj?.updatedAt ?? ''}`
+  // 🔥 Ab nested objects nikalne ka overhead browser par nahi hai
+  const savedAvatarKey = `${user?.avatarId ?? ''}:${user?.avatarUpdatedAt ?? ''}`
 
   useEffect(() => {
     if (getValues('avatar') === null) {
@@ -77,7 +85,7 @@ export default function ProfileForm({ user }: { user: User | null }) {
   }, [savedAvatarKey, getValues, setValue])
 
   const fullSizeAvatar =
-    currentAvatarValue === null ? undefined : newAvatarPreview || avatarObj?.url || undefined
+    currentAvatarValue === null ? undefined : newAvatarPreview || user?.avatarUrl || undefined
 
   const initials = user?.name
     ? user.name
@@ -93,7 +101,6 @@ export default function ProfileForm({ user }: { user: User | null }) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // ✅ Client-side validation taaki badi ya galat file upload hi na ho
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       toast.add({
         type: 'error',
@@ -176,7 +183,8 @@ export default function ProfileForm({ user }: { user: User | null }) {
     }
   }
 
-  const hasAvatarToRemove = Boolean(user?.avatar || newAvatarPreview) && currentAvatarValue !== null
+  const hasAvatarToRemove =
+    Boolean(user?.avatarUrl || newAvatarPreview) && currentAvatarValue !== null
 
   const inputWrapperClass = 'relative flex items-center'
   const inputIconClass = 'absolute left-4 text-muted-foreground w-5 h-5'
@@ -221,8 +229,8 @@ export default function ProfileForm({ user }: { user: User | null }) {
               >
                 <DialogTrigger>
                   <UserAvatar
-                    user={user}
-                    src={newAvatarPreview}
+                    user={{ name: user?.name } as any} // 🔥 Typecast to avoid heavy Payload type mismatch
+                    src={newAvatarPreview || user?.avatarUrl}
                     removed={currentAvatarValue === null}
                     sizes="(max-width: 768px) 112px, 128px"
                     unoptimized={Boolean(newAvatarPreview)}

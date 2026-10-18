@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import { unstable_cache } from 'next/cache' // 🔥 Cache import kiya
+import { cacheLife, cacheTag } from 'next/cache' // 🔥 Naye imports (unstable_cache hata diya)
 
 // Components
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -25,28 +25,26 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// 🔥 Caching Logic for Single Blog
-// Is function me 'id' as argument pass karna zaroori hai taaki har blog ka alag cache bane
-const getCachedSingleBlog = unstable_cache(
-  async (id: string) => {
-    const payload = await getPayload({ config: configPromise })
+// 🔥 Naya Next.js 16 Caching Logic for Single Blog
+// 'id' automatically cache key ban jayega
+async function getCachedSingleBlog(id: string) {
+  'use cache' // 👈 1. Directive lagaya
+  cacheLife('hours') // 👈 2. Cache life
+  cacheTag('blogs') // 👈 3. Tag (taaki admin update kare toh ye bhi refresh ho)
 
-    try {
-      const blog = await payload.findByID({
-        collection: 'blogs',
-        id: id,
-        depth: 2, // 2 zaroori hai avatar URL ke liye
-      })
-      return blog as unknown as Blog
-    } catch (error) {
-      return null // NotFound handle karne ke liye null return karenge
-    }
-  },
-  ['single-blog-cache'], // Base cache key
-  {
-    tags: ['blogs'], // 🔥 Tag jo Payload CMS hook se cache clear karega
-  },
-)
+  const payload = await getPayload({ config: configPromise })
+
+  try {
+    const blog = await payload.findByID({
+      collection: 'blogs',
+      id: id,
+      depth: 2, // 2 zaroori hai avatar URL ke liye
+    })
+    return blog as unknown as Blog
+  } catch (error) {
+    return null // NotFound handle karne ke liye null return karenge
+  }
+}
 
 export default async function BlogSinglePage({ params }: PageProps) {
   const { id } = await params

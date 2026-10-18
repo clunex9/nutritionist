@@ -1,51 +1,3 @@
-// import { withPayload } from '@payloadcms/next/withPayload'
-// import type { NextConfig } from 'next'
-// import path from 'path'
-// import { fileURLToPath } from 'url'
-
-// const __filename = fileURLToPath(import.meta.url)
-// const dirname = path.dirname(__filename)
-
-// const nextConfig: NextConfig = {
-//   images: {
-//     dangerouslyAllowLocalIP: process.env.NODE_ENV !== 'production',
-//     remotePatterns: [
-//       {
-//         protocol: 'https',
-//         hostname: 'lh3.googleusercontent.com', // For Google OAuth avatars
-//       },
-//       {
-//         protocol: 'https',
-//         hostname: '*.public.blob.vercel-storage.com', // For vercel blob images
-//       },
-//       {
-//         protocol: 'https',
-//         hostname: 'nutritionist-two.vercel.app', // Aapki live domain
-//       },
-//       {
-//         protocol: 'http',
-//         hostname: 'localhost',
-//         port: '3000', // Local dev server ke absolute URLs ke liye
-//       },
-//     ],
-//   },
-
-//   webpack: (webpackConfig) => {
-//     webpackConfig.resolve.extensionAlias = {
-//       '.cjs': ['.cts', '.cjs'],
-//       '.js': ['.ts', '.tsx', '.js', '.jsx'],
-//       '.mjs': ['.mts', '.mjs'],
-//     }
-
-//     return webpackConfig
-//   },
-//   turbopack: {
-//     root: path.resolve(dirname),
-//   },
-// }
-
-// export default withPayload(nextConfig, { devBundleServerPackages: false })
-
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 import path from 'path'
@@ -66,6 +18,8 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '4mb',
     },
   },
+  compress: false,
+  cacheComponents: true,
 
   images: {
     dangerouslyAllowLocalIP: process.env.NODE_ENV !== 'production',

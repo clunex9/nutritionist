@@ -1,4 +1,3 @@
-// app/(frontend)/profile/favorites/page.tsx (Ya jahan bhi ye file hai)
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,15 +8,14 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { cookies } from 'next/headers'
 import RemoveButton from '@/components/shared/remove-button'
-import { BlogImage } from '@/payload-types'
+import type { BlogImage } from '@/payload-types'
 
-// 👇 Page ab async Server Component ban gaya hai
 export default async function FavoritesPage() {
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
 
   if (!token) {
-    return <div className="p-8 text-center">Please login to view your favorites.</div>
+    return <div className="p-8 text-center text-gray-500">Please login to view your favorites.</div>
   }
 
   const payload = await getPayload({ config: configPromise })
@@ -28,14 +26,15 @@ export default async function FavoritesPage() {
   })
 
   if (!user) {
-    return <div className="p-8 text-center">Session expired. Please login again.</div>
+    return <div className="p-8 text-center text-gray-500">Session expired. Please login again.</div>
   }
 
-  // 2. Direct database se Favorites fetch kiye
+  // 2. Direct database se Favorites fetch kiye (With Limit Fix)
   const { docs: favorites } = await payload.find({
     collection: 'favorites',
     where: { user: { equals: user.id } },
-    depth: 2, // Blog ka poora data laane ke liye depth 2 rakha
+    depth: 2,
+    limit: 50, // 🔥 FIX: Server memory safe rakhne ke liye limit lagayi
   })
 
   const hasFavorites = favorites && favorites.length > 0
@@ -77,15 +76,17 @@ export default async function FavoritesPage() {
                 key={fav.id}
                 className="bg-green-95 border-green-85 group relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
               >
-                {/* 🔴 Naya Client Component Button Yahan Laga Diya */}
+                {/* Client Component ko sirf string di gayi hai */}
                 <RemoveButton blogId={blog.id} type="favorite" />
 
                 <div className="relative h-48 w-full bg-gray-100">
                   {finalCoverImageUrl ? (
                     <Image
                       src={finalCoverImageUrl}
-                      alt={blog.title}
+                      alt={blog.title || 'Blog cover'}
                       fill
+                      // 🔥 FIX: Grid ke hisaab se image sizes optimize kiye
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                     />
                   ) : (

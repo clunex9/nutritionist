@@ -9,8 +9,16 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/com
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-import type { Testimonial, TestimonialAvatar, User } from '@/payload-types'
+import type { User } from '@/payload-types'
 import UserAvatar from '@/components/shared/user-avatar'
+
+// 🔥 Naya simple type jisme koi heavy payload object nahi hai
+export type CleanTestimonial = {
+  id: string
+  clientName: string
+  review: string
+  avatarUrl: string
+}
 
 const QuotesIcon = () => (
   <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
@@ -21,13 +29,8 @@ const QuotesIcon = () => (
   </svg>
 )
 
-const TestimonialCard = memo(({ item }: { item: Testimonial }) => {
-  const { avatar, clientName: name, review } = item
-
-  const avatarUrl =
-    typeof avatar === 'object' && avatar !== null
-      ? (avatar as TestimonialAvatar)?.thumbnailURL || (avatar as TestimonialAvatar)?.url || ''
-      : ''
+const TestimonialCard = memo(({ item }: { item: CleanTestimonial }) => {
+  const { avatarUrl, clientName: name, review } = item
 
   const userProp = useMemo(() => ({ name }) as Pick<User, 'name'>, [name])
 
@@ -44,7 +47,7 @@ const TestimonialCard = memo(({ item }: { item: Testimonial }) => {
       <CardFooter className="border-green-85 bg-green-95 mt-auto flex items-center gap-3 border-t px-7.5 py-5">
         <UserAvatar
           user={userProp as User}
-          src={avatarUrl}
+          src={avatarUrl} // 🔥 Ab direct string pass ho rahi hai!
           priority={false}
           showSkeleton={false}
           sizes="(max-width: 1024px) 40px, 50px"
@@ -129,7 +132,7 @@ function CarouselControls({ api }: { api: CarouselApi | undefined }) {
   )
 }
 
-export default function TestimonialSection({ data = [] }: { data: Testimonial[] }) {
+export default function TestimonialSection({ data = [] }: { data: CleanTestimonial[] }) {
   const [api, setApi] = useState<CarouselApi>()
 
   if (!data?.length) return null

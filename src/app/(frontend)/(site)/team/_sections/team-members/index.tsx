@@ -1,39 +1,54 @@
-import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import type { Team } from '@/payload-types'
+import type { Team, TeamAvatar } from '@/payload-types' // Avatar type import kiya
+import { cacheLife, cacheTag } from 'next/cache'
 
 import TeamMembersSection from './team-members.section'
 
-const getCachedTeam = unstable_cache(
-  async () => {
-    const payload = await getPayload({ config: configPromise })
+async function getCachedTeam() {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('team-data')
 
-    const { docs } = await payload.find({
-      collection: 'team',
-      limit: 50,
-      depth: 1,
-      pagination: false,
-      select: {
-        name: true,
-        role: true,
-        department: true,
-        avatar: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    })
+  const payload = await getPayload({ config: configPromise })
 
-    return docs as unknown as Team[]
-  },
-  ['team-members-cache'],
-  {
-    // 🔥 Yahan se revalidate: 3600 hata diya. Ab ye forever cache me rahega!
-    tags: ['team-data'],
-  },
-)
+  const { docs } = await payload.find({
+    collection: 'team',
+    limit: 50,
+    depth: 1,
+    pagination: false,
+    select: {
+      name: true,
+      role: true,
+      department: true,
+      avatar: true,
+    },
+  })
+
+  return docs as unknown as Team[]
+}
 
 export default async function TeamMembers() {
-  const teamData = await getCachedTeam()
-  return <TeamMembersSection data={teamData} />
+  const rawTeamData = await getCachedTeam()
+
+  // 🔥 THE MAGIC FIX: Client me bhejne se pehle data ko ekdum halka (lightweight) karein
+  // Payload ke heavy objects server par hi chhod dein
+  const lightweightTeamData = rawTeamData.map((member) => {
+    const avatarObj =
+      typeof member.avatar === 'object' && member.avatar !== null
+        ? (member.avatar as TeamAvatar)
+        : null
+
+    const imageUrl = avatarObj?.url || avatarObj?.thumbnailURL || ''
+
+    return {
+      id: member.id as string,
+      name: member.name,
+      role: member.role,
+      department: member.department,
+      imageUrl: imageUrl, // Ab ye direct string hai, heavy object nahi!
+    }
+  })
+
+  return <TeamMembersSection data={lightweightTeamData} />
 }
