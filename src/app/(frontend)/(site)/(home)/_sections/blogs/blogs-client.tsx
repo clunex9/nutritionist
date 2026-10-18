@@ -14,18 +14,37 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import AddToFavorite from '@/components/shared/add-to-favorite'
 import AddToBookmark from '@/components/shared/add-to-bookmark'
 import type { Blog, BlogImage, User, Avatar as AvatarType } from '@/payload-types'
+import { useEffect, useState } from 'react'
+import { getUserInteractions } from '@/actions/user.action'
 
 interface BlogsClientProps {
   blogs: Blog[]
-  userFavoriteBlogsIds: string[]
-  userBookmarkBlogsIds: string[]
 }
 
-export default function BlogsClient({
-  blogs,
-  userFavoriteBlogsIds,
-  userBookmarkBlogsIds,
-}: BlogsClientProps) {
+export default function BlogsClient({ blogs }: BlogsClientProps) {
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [bookmarks, setBookmarks] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true) // 🔥 Loading state add ki
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const blogIds = blogs.map((b) => b.id)
+      if (blogIds.length > 0) {
+        try {
+          const data = await getUserInteractions(blogIds)
+          setFavorites(data.favorites)
+          setBookmarks(data.bookmarks)
+        } finally {
+          setIsLoading(false) // 🔥 Data aane ke baad loading false kar do
+        }
+      } else {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [blogs])
+
   return (
     <section id="blogs" className="scroll-mt-10 py-10 lg:py-16">
       {/* Header */}
@@ -149,11 +168,13 @@ export default function BlogsClient({
                   <div className="ml-auto flex gap-2">
                     <AddToFavorite
                       id={blog.id}
-                      initialFavorited={userFavoriteBlogsIds.includes(blog.id)}
+                      initialFavorited={favorites.includes(blog.id)}
+                      isLoading={isLoading}
                     />
                     <AddToBookmark
                       id={blog.id}
-                      initialBookmarked={userBookmarkBlogsIds.includes(blog.id)}
+                      initialBookmarked={bookmarks.includes(blog.id)}
+                      isLoading={isLoading}
                     />
                   </div>
                 </div>

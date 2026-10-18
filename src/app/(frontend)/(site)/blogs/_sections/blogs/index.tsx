@@ -1,24 +1,44 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { unstable_cache } from 'next/cache' // 🔥 Cache import kiya
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { buttonVariants } from '@/components/ui/button'
-import { cn } from 'cn'
+import { cn } from '@/lib/utils' // path fix kiya (cn' -> '@/lib/utils' jo standard hota hai)
 
 // Payload API imports
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import type { Blog, BlogImage } from '@/payload-types' // 👈 Types imported
+import type { Blog, BlogImage } from '@/payload-types'
 
-export default async function Blogs() {
-  const payload = await getPayload({ config: configPromise })
+// 🔥 Caching Logic for All Blogs Page
+const getCachedAllBlogs = unstable_cache(
+  async () => {
+    const payload = await getPayload({ config: configPromise })
 
-  // 1. Database se saare blogs fetch karein aur Type define karein
-  const { docs: blogs } = (await payload.find({
-    collection: 'blogs',
-    depth: 1,
-    limit: 100,
-    sort: '-createdAt',
-  })) as unknown as { docs: Blog[] }
+    const { docs } = await payload.find({
+      collection: 'blogs',
+      depth: 1,
+      limit: 100, // 100 blogs ek sath load honge
+      sort: '-createdAt',
+      select: {
+        title: true,
+        category: true,
+        description: true,
+        image: true,
+      },
+    })
+
+    return docs as unknown as Blog[]
+  },
+  ['all-blogs-page-cache'], // 🔥 Unique Key
+  {
+    tags: ['blogs'], // 🔥 Hook se link karne ke liye tag
+  },
+)
+
+export default async function BlogsPage() {
+  // 🔥 Direct Memory (RAM) se fetch hoga
+  const blogs = await getCachedAllBlogs()
 
   // 2. Dynamically Categories Extract karein
   const uniqueCategories = Array.from(new Set(blogs.map((blog) => blog.category).filter(Boolean)))
@@ -39,12 +59,7 @@ export default async function Blogs() {
       <div className="container">
         <Tabs defaultValue="all" className="w-full">
           {/* Top Navigation Bar */}
-          <TabsList
-            className="bg-dark-green-20 text-background z-40 mb-10 flex h-auto! w-full scrollbar-none flex-nowrap justify-start gap-2 overflow-x-auto rounded-t-none rounded-b-lg p-4 [-ms-overflow-style:none] lg:px-20 [&::-webkit-scrollbar]:hidden"
-            // style={{
-            //   top: 'calc(var(--header-height, 70px) + var(--header-offset, 0px))',
-            // }}
-          >
+          <TabsList className="bg-dark-green-20 text-background z-40 mb-10 flex h-auto! w-full scrollbar-none flex-nowrap justify-start gap-2 overflow-x-auto rounded-t-none rounded-b-lg p-4 [-ms-overflow-style:none] lg:px-20 [&::-webkit-scrollbar]:hidden">
             {categoryTabs.map(({ label, value }) => (
               <TabsTrigger
                 key={value}
@@ -72,13 +87,11 @@ export default async function Blogs() {
                 ) : (
                   <div className="border-green-85 bg-green-95 grid grid-cols-1 rounded-lg border md:grid-cols-2">
                     {filteredArticles.map((article: Blog, index: number) => {
-                      // 🔥 Type Guard for Media (Bilkul Team Section ki tarah)
                       const imageObj =
                         typeof article.image === 'object' && article.image !== null
                           ? (article.image as BlogImage)
                           : null
 
-                      // 👇 Direct aur safe URL extraction
                       const finalCoverImageUrl = imageObj?.url || ''
 
                       return (
@@ -98,7 +111,6 @@ export default async function Blogs() {
                           {/* Image Container */}
                           <div className="relative mb-8 ml-auto aspect-video w-[90%] overflow-hidden rounded-tl-lg rounded-tr-lg bg-gray-200 md:w-[80%] lg:w-[70%]">
                             {finalCoverImageUrl ? (
-                              // 👇 Next.js Image hata kar native img tag lagaya
                               <Image
                                 src={finalCoverImageUrl}
                                 alt={article.title}

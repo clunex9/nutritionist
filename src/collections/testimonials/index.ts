@@ -1,6 +1,6 @@
 // src/collections/testimonials.ts
 import { CollectionConfig } from 'payload'
-import { deleteOldAvatar } from './hook'
+import { deleteAvatarOnTestimonialDelete, deleteOldAvatar } from './hook'
 
 export const Testimonials: CollectionConfig = {
   slug: 'testimonials',
@@ -9,6 +9,7 @@ export const Testimonials: CollectionConfig = {
   },
   hooks: {
     afterChange: [deleteOldAvatar],
+    afterDelete: [deleteAvatarOnTestimonialDelete], // 🔥 Delete hook array me add kiya
   },
   access: {
     read: () => true, // API se publicly fetch karne ke liye

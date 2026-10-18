@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { deleteOldImage } from './hook'
+import { deleteImageOnBlogDelete, deleteOldImage } from './hook'
 
 export const Blogs: CollectionConfig = {
   slug: 'blogs',
@@ -9,6 +9,7 @@ export const Blogs: CollectionConfig = {
   },
   hooks: {
     afterChange: [deleteOldImage],
+    afterDelete: [deleteImageOnBlogDelete], // 🔥 Delete hook array me add kiya
   },
   access: {
     read: () => true, // API se publicly fetch karne ke liye

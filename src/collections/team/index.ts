@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { deleteOldAvatar } from './hook'
+import { deleteAvatarOnMemberDelete, deleteOldAvatar } from './hook'
 
 export const Team: CollectionConfig = {
   slug: 'team',
@@ -9,6 +9,7 @@ export const Team: CollectionConfig = {
   },
   hooks: {
     afterChange: [deleteOldAvatar],
+    afterDelete: [deleteAvatarOnMemberDelete], // 🔥 Delete hook add kiya
   },
   access: {
     read: () => true, // Frontend API se fetch karne ke liye

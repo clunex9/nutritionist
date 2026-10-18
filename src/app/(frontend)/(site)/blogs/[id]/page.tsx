@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
-import AddToFavorite from '@/components/shared/add-to-favorite'
-import AddToBookmark from '@/components/shared/add-to-bookmark'
+import Image from 'next/image'
+import { unstable_cache } from 'next/cache' // 🔥 Cache import kiya
 
-// 👇 Shadcn Breadcrumb Imports
+// Components
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,101 +16,56 @@ import {
 // Payload Imports
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { cookies } from 'next/headers'
 
-// 👇 Sabhi zaroori Payload types import kiye
+// Types
 import type { Blog, User, BlogImage, Avatar as AvatarType } from '@/payload-types'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import Image from 'next/image'
+import SingleBlogActions from './single-blogs-action'
 
-// Next.js ke params Next.js 15+ me Promise hote hain
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
+// 🔥 Caching Logic for Single Blog
+// Is function me 'id' as argument pass karna zaroori hai taaki har blog ka alag cache bane
+const getCachedSingleBlog = unstable_cache(
+  async (id: string) => {
+    const payload = await getPayload({ config: configPromise })
+
+    try {
+      const blog = await payload.findByID({
+        collection: 'blogs',
+        id: id,
+        depth: 2, // 2 zaroori hai avatar URL ke liye
+      })
+      return blog as unknown as Blog
+    } catch (error) {
+      return null // NotFound handle karne ke liye null return karenge
+    }
+  },
+  ['single-blog-cache'], // Base cache key
+  {
+    tags: ['blogs'], // 🔥 Tag jo Payload CMS hook se cache clear karega
+  },
+)
+
 export default async function BlogSinglePage({ params }: PageProps) {
   const { id } = await params
-  const payload = await getPayload({ config: configPromise })
 
-  // 1. Fetch current blog by ID (Strictly Typed)
-  let blog: Blog
-  try {
-    blog = (await payload.findByID({
-      collection: 'blogs',
-      id: id,
-      depth: 2,
-    })) as unknown as Blog
-  } catch (error) {
-    return notFound()
-  }
+  // 1. Sirf Cached Blog Fetch Karein (Super-fast RAM se)
+  const blog = await getCachedSingleBlog(id)
 
   if (!blog) return notFound()
 
-  // 2. Fetch User & Auth state for Favorites/Bookmarks
-  const cookieStore = await cookies()
-  const token = cookieStore.get('payload-token')?.value
-  let userId = null
-  let isFavorited = false
-  let isBookmarked = false
-
-  if (token) {
-    try {
-      const { user } = await payload.auth({
-        headers: new Headers({ Authorization: `JWT ${token}` }),
-      })
-      userId = user?.id || null
-
-      if (userId) {
-        // // Check if THIS specific blog is favorited by the user
-        // const favCheck = await payload.find({
-        //   collection: 'favorites',
-        //   where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
-        //   depth: 0,
-        // })
-        // isFavorited = favCheck.totalDocs > 0
-
-        // // Check if THIS specific blog is bookmarked by the user
-        // const bookCheck = await payload.find({
-        //   collection: 'bookmarks',
-        //   where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
-        //   depth: 0,
-        // })
-        // isBookmarked = bookCheck.totalDocs > 0
-
-        const [favCheck, bookCheck] = await Promise.all([
-          payload.find({
-            collection: 'favorites',
-            where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
-            depth: 0,
-          }),
-          payload.find({
-            collection: 'bookmarks',
-            where: { and: [{ user: { equals: userId } }, { blog: { equals: id } }] },
-            depth: 0,
-          }),
-        ])
-
-        isFavorited = favCheck.totalDocs > 0
-        isBookmarked = bookCheck.totalDocs > 0
-      }
-    } catch (e) {
-      console.error('Auth check failed on single blog page')
-    }
-  }
-
-  // 3. Extract details safely (🔥 Type Guards applied)
+  // 2. Type Guards & Image Extraction
   const coverImage =
     typeof blog.image === 'object' && blog.image !== null ? (blog.image as BlogImage) : null
-
   const author =
     typeof blog.author === 'object' && blog.author !== null ? (blog.author as User) : null
-
   const authorAvatar =
     typeof author?.avatar === 'object' && author?.avatar !== null
       ? (author.avatar as AvatarType)
       : null
 
-  // 👇 Simplified Image URLs
   const finalCoverImageUrl = coverImage?.url || ''
   const finalAvatarUrl = authorAvatar?.thumbnailURL || authorAvatar?.url || ''
 
@@ -117,7 +73,7 @@ export default async function BlogSinglePage({ params }: PageProps) {
     ? author?.name
         .trim()
         .split(/\s+/)
-        .map((n: string) => n[0])
+        .map((n) => n[0])
         .join('')
         .substring(0, 2)
         .toUpperCase()
@@ -126,7 +82,7 @@ export default async function BlogSinglePage({ params }: PageProps) {
   return (
     <article className="min-h-screen bg-gray-50/30 pt-6 pb-16 lg:pt-10">
       <div className="container mx-auto max-w-4xl px-4">
-        {/* 🟢 SHADCN BREADCRUMB SECTION */}
+        {/* 🟢 SHADCN BREADCRUMB */}
         <div className="mb-8">
           <Breadcrumb>
             <BreadcrumbList>
@@ -147,7 +103,7 @@ export default async function BlogSinglePage({ params }: PageProps) {
           </Breadcrumb>
         </div>
 
-        {/* 🟢 HEADER SECTION: Category, Title, Author */}
+        {/* 🟢 HEADER SECTION */}
         <header className="mb-10 text-center md:text-left">
           <span className="text-dark-green-20 mb-4 inline-block rounded-full bg-[#C5E1A5]/30 px-4 py-1.5 text-sm font-semibold tracking-wider uppercase">
             {blog.category}
@@ -159,7 +115,6 @@ export default async function BlogSinglePage({ params }: PageProps) {
           <div className="border-green-80 flex flex-col items-center justify-between gap-6 rounded-lg border bg-white p-6 md:flex-row md:gap-4">
             {/* Author Info */}
             <div className="flex items-center gap-4 text-left">
-              {/* 👇 Shadcn Avatar hata kar Native div/img lagaya */}
               <div className="bg-dark-green-15 relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md lg:size-12.5">
                 <Avatar className="bg-dark-green-15 size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">
                   {finalAvatarUrl ? (
@@ -168,8 +123,6 @@ export default async function BlogSinglePage({ params }: PageProps) {
                       alt={author?.name || 'Author'}
                       width={50}
                       height={50}
-                      priority={true} // 🔥 Preload
-                      decoding="sync" // 🔥 Force browser to paint instantly
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -195,25 +148,21 @@ export default async function BlogSinglePage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Actions: Favorite & Bookmark */}
+            {/* Actions: Client Component ko bulaya hai yahan 👇 */}
             <div className="flex items-center gap-3">
-              <AddToFavorite id={blog.id} initialFavorited={isFavorited} />
-              <AddToBookmark id={blog.id} initialBookmarked={isBookmarked} />
+              <SingleBlogActions blogId={blog.id} />
             </div>
           </div>
         </header>
 
         {/* 🔵 HERO IMAGE */}
-        {/* 👇 Next.js Image hata kar Native img lagaya aur bg-gray-200 add kiya as placeholder */}
         <div className="border-green-85 relative mb-12 aspect-video w-full overflow-hidden rounded-lg border bg-gray-200">
           {finalCoverImageUrl ? (
             <Image
               src={finalCoverImageUrl}
               alt={blog.title}
               fill
-              priority={true} // 🔥 Preload
-              fetchPriority="high" // 🔥 Network priority
-              decoding="sync" // 🔥 Browser ko rukne nahi dega, direct paint karega
+              priority={true} // Ye hero image hai isliye priority zaroori hai
               sizes="(max-width: 896px) 100vw, 896px"
               className="h-full w-full object-cover"
             />
@@ -229,7 +178,6 @@ export default async function BlogSinglePage({ params }: PageProps) {
           <p className="mb-8 text-xl leading-relaxed font-medium text-gray-600">
             {blog.description}
           </p>
-
           <hr className="border-green-80 my-10" />
         </div>
       </div>
