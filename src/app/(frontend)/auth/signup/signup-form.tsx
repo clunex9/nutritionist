@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -44,6 +44,10 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
+  // Naye states add karein
+  const [isPending, startTransition] = useTransition()
+  const [isRegisterSuccess, setIsRegisterSuccess] = useState(false)
+
   useEffect(() => {
     const handleResetLoading = () => {
       setIsGoogleLoading(false)
@@ -58,6 +62,19 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
     }
   }, [])
 
+  // Ye useEffect component ke unmount hone ka wait karega
+  useEffect(() => {
+    return () => {
+      // Jab component screen se hatega (route change hone par), tab ye chalega
+      if (isRegisterSuccess) {
+        toast.add({
+          type: 'success',
+          title: 'Account created successfully! 🎉',
+          description: 'Please check your email to verify your account.',
+        })
+      }
+    }
+  }, [isRegisterSuccess])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,18 +96,16 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       const result = await registerAction(backendData, callbackUrl)
 
       if (result.success) {
-        form.reset()
-        toast.add({
-          type: 'success',
-          title: 'Account created successfully! 🎉',
-          description: 'Please check your email to verify your account.',
+        setIsRegisterSuccess(true)
+
+        startTransition(() => {
+          const signinUrl = callbackUrl
+            ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
+            : '/auth/signin'
+
+          router.push(signinUrl)
+          form.reset()
         })
-
-        const signinUrl = callbackUrl
-          ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
-          : '/auth/signin'
-
-        router.push(signinUrl)
       } else {
         toast.add({
           type: 'error',
@@ -216,10 +231,10 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
         <Field>
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting || isGoogleLoading}
+            disabled={form.formState.isSubmitting || isPending}
             className="bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold disabled:cursor-not-allowed disabled:opacity-80"
           >
-            {form.formState.isSubmitting ? (
+            {form.formState.isSubmitting || isPending ? (
               <span className="flex items-center gap-2">
                 <svg
                   className="text-foreground h-5 w-5 animate-spin"
@@ -256,7 +271,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
           <Button
             variant="outline"
             type="button"
-            disabled={form.formState.isSubmitting || isGoogleLoading}
+            disabled={form.formState.isSubmitting || isGoogleLoading || isPending}
             onClick={() => {
               setIsGoogleLoading(true)
               window.location.href = `/api/auth/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
