@@ -21,6 +21,7 @@ import PasswordInput from '@/components/shared/password-input'
 import { toast } from '@/components/ui/toast'
 import { loginAction } from '@/actions/auth.action'
 import { notifyAuthChange } from '@/lib/auth-sync'
+import { getSafeCallbackUrl } from '@/lib/safe-redirect'
 
 const formSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -36,48 +37,39 @@ const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   OAuthFailed: 'Google authentication failed. Please try again.',
 }
 
-export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
+export default function SigninForm() {
   const router = useRouter()
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const searchParams = useSearchParams()
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const hasToasted = useRef(false)
 
-  // Naye states add karein
-  const [isPending, startTransition] = useTransition()
-  const [isLoginSuccess, setIsLoginSuccess] = useState(false)
+  const rawCallbackUrl = searchParams?.get('callbackUrl')
+  const callbackUrl = getSafeCallbackUrl(rawCallbackUrl, '/account/profile')
 
-  // ✅ Verification Success + OAuth Error Toasts
   useEffect(() => {
     if (hasToasted.current) return
 
-    const verified = searchParams?.get('verified')
     const errorCode = searchParams?.get('error')
 
-    if (verified === 'true') {
-      hasToasted.current = true
-      toast.add({
-        type: 'success',
-        title: 'Account Verified! 🎉',
-        description: 'You can now log in with your credentials.',
-      })
-    } else if (errorCode) {
+    if (errorCode) {
       hasToasted.current = true
       toast.add({
         type: 'error',
         title: 'Sign-in Error',
         description: OAUTH_ERROR_MESSAGES[errorCode] || 'Authentication failed. Please try again.',
       })
-    } else {
-      return
+
+      // Error toast dikhane ke baad URL clean kar dega
+      const cleanUrl = callbackUrl
+        ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
+        : '/auth/signin'
+      router.replace(cleanUrl, { scroll: false })
     }
-
-    const cleanUrl = callbackUrl
-      ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
-      : '/auth/signin'
-
-    router.replace(cleanUrl, { scroll: false })
   }, [searchParams, router, callbackUrl])
 
+  // ✅ NOTE: Ye window focus wala useEffect bilkul perfect UX hai!
+  // Agar user Google login screen se back aata hai, toh infinite spinner ruk jayega. Ise mat hatana.
   useEffect(() => {
     const handleResetLoading = () => setIsGoogleLoading(false)
     window.addEventListener('focus', handleResetLoading)
@@ -90,21 +82,8 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   })
-
-  // Ye useEffect component ke unmount hone ka wait karega
-  useEffect(() => {
-    return () => {
-      // Jab component screen se hatega (route change hone par), tab ye chalega
-      if (isLoginSuccess) {
-        toast.add({ type: 'success', title: 'You have successfully logged in!' })
-      }
-    }
-  }, [isLoginSuccess])
 
   const processSubmit = async (data: z.infer<typeof formSchema>) => {
     if (typeof window !== 'undefined' && !window.navigator.onLine) {
@@ -116,14 +95,14 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
       const result = await loginAction(data)
 
       if (result.success) {
-        // 1. Success flag true karein (Ye useEffect detect karega jab transition khatam hoga)
-        setIsLoginSuccess(true)
+        // 🔥 FIX: Success message aur event instantly yahi trigger karein
+        toast.add({ type: 'success', title: 'You have successfully logged in!' })
         notifyAuthChange()
 
-        // 2. Navigation ko startTransition mein daalein
+        // 🔥 FIX: Sirf router.push rakhein (Double routing khatam)
         startTransition(() => {
           router.push(callbackUrl)
-          router.refresh()
+          form.reset()
         })
       } else {
         toast.add({ type: 'error', title: result.error || 'Invalid credentials' })
@@ -160,10 +139,10 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
                   Email
                 </FieldLabel>
                 <Link
-                  href="/auth/verify-email/resend"
+                  href="/auth/resend"
                   className="text-green-97 ml-auto inline-block text-xs underline-offset-4 hover:underline"
                 >
-                  Verify your email?
+                  Email not verified?
                 </Link>
               </div>
               <Input
@@ -220,7 +199,32 @@ export default function SigninForm({ callbackUrl }: { callbackUrl: string }) {
             disabled={form.formState.isSubmitting || isPending}
             className="bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {form.formState.isSubmitting || isPending ? 'Logging in...' : 'Login'}
+            {form.formState.isSubmitting || isPending ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="text-green-70 h-5 w-5 animate-spin"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-20"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {form.formState.isSubmitting ? 'Logging in...' : 'Redirecting...'}
+              </span>
+            ) : (
+              'Login'
+            )}
           </Button>
         </Field>
 

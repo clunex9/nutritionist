@@ -97,7 +97,7 @@ export const verifyEmailTemplate = async (args: any) => {
   // User ke role ke hisaab se verification route decide karna
   const verifyURL = hasCmsAccess(user)
     ? `${serverURL}/cms/verify/${token}`
-    : `${serverURL}/auth/verify-email/${token}` // Aap apne frontend route ke hisaab se is path ko adjust kar sakte hain
+    : `${serverURL}/auth/verify/${token}` // Aap apne frontend route ke hisaab se is path ko adjust kar sakte hain
 
   // React Email component ko HTML string me render karna
   const emailHtml = await render(<VerifyEmailComponent user={user} verifyURL={verifyURL} />)

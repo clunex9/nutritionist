@@ -22,9 +22,10 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           src={signinImage}
           alt="Authentication Background"
           fill
-          priority
-          decoding="sync"
-          sizes="50vw"
+          priority // 🔥 LCP ke liye priority zaroori hai, isko rehne dein
+          placeholder="blur" // 🔥 FIX 1: Jab tak original image load hogi, ek fast blur effect dikhega
+          sizes="50vw" // Desktop par 50% width hi chahiye, perfect!
+          // 🔥 FIX 2: decoding="sync" ko poori tarah hata diya. Ab browser hang nahi hoga!
           className="object-cover dark:brightness-[0.2] dark:grayscale"
         />
       </div>

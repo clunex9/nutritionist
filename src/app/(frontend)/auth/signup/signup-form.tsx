@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { Controller, useForm } from 'react-hook-form'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Field,
   FieldDescription,
@@ -20,6 +20,8 @@ import { Input } from '@/components/ui/input'
 import PasswordInput from '@/components/shared/password-input'
 import { toast } from '@/components/ui/toast'
 import { registerAction } from '@/actions/auth.action'
+import { getSafeCallbackUrl } from '@/lib/safe-redirect'
+import { cn } from 'cn'
 
 const formSchema = z
   .object({
@@ -40,19 +42,20 @@ const formSchema = z
     path: ['confirmPassword'],
   })
 
-export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
-  const router = useRouter()
+export default function SignupForm() {
+  const searchParams = useSearchParams()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
-  // Naye states add karein
-  const [isPending, startTransition] = useTransition()
-  const [isRegisterSuccess, setIsRegisterSuccess] = useState(false)
+  // 1. Naye states add karein
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [submittedEmail, setSubmittedEmail] = useState('')
+
+  // 🔥 URL se callbackUrl yahi Client Component mein nikal lein
+  const rawCallbackUrl = searchParams?.get('callbackUrl')
+  const callbackUrl = getSafeCallbackUrl(rawCallbackUrl, '/account/profile')
 
   useEffect(() => {
-    const handleResetLoading = () => {
-      setIsGoogleLoading(false)
-    }
-
+    const handleResetLoading = () => setIsGoogleLoading(false)
     window.addEventListener('focus', handleResetLoading)
     window.addEventListener('pageshow', handleResetLoading)
 
@@ -62,19 +65,6 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
     }
   }, [])
 
-  // Ye useEffect component ke unmount hone ka wait karega
-  useEffect(() => {
-    return () => {
-      // Jab component screen se hatega (route change hone par), tab ye chalega
-      if (isRegisterSuccess) {
-        toast.add({
-          type: 'success',
-          title: 'Account created successfully! 🎉',
-          description: 'Please check your email to verify your account.',
-        })
-      }
-    }
-  }, [isRegisterSuccess])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -96,16 +86,18 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       const result = await registerAction(backendData, callbackUrl)
 
       if (result.success) {
-        setIsRegisterSuccess(true)
+        // 1. Success States set kiye (Ye UI dikhayega)
+        setSubmittedEmail(data.email)
+        setIsSuccess(true)
 
-        startTransition(() => {
-          const signinUrl = callbackUrl
-            ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
-            : '/auth/signin'
-
-          router.push(signinUrl)
-          form.reset()
+        // 2. Toast dikhaya
+        toast.add({
+          type: 'success',
+          title: 'Account created successfully! 🎉',
+          description: 'Please check your email to verify your account.',
         })
+
+        form.reset()
       } else {
         toast.add({
           type: 'error',
@@ -115,6 +107,68 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
     } catch (error) {
       toast.add({ type: 'error', title: 'Something went wrong. Please try again.' })
     }
+  }
+
+  // 3. Component ke return mein sabse upar Success UI add karein
+  if (isSuccess) {
+    const inboxUrl = getEmailProviderUrl(submittedEmail)
+
+    return (
+      <div className="flex w-full flex-col items-center justify-center text-center">
+        <div className="mb-6 flex flex-col items-center gap-1">
+          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 text-green-500">
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-green-97 text-2xl font-bold">Check your email</h1>
+          <p className="text-dark-green-80 mt-2 text-sm text-balance">
+            We sent a verification link to{' '}
+            <span className="text-green-97 font-semibold">{submittedEmail}</span>
+          </p>
+        </div>
+
+        <div className="flex w-full max-w-sm flex-col gap-3">
+          {/* 🔥 Agar standard provider hai toh Inbox ka button dikhega */}
+          {inboxUrl && (
+            <a
+              href={inboxUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants(),
+                'bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold',
+              )}
+            >
+              Open Email App
+            </a>
+          )}
+
+          {/* Standard Signin Button */}
+          <Link
+            href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            className={cn(
+              buttonVariants({ variant: inboxUrl ? 'outline' : 'default' }),
+              inboxUrl
+                ? 'border-dark-green-25 text-green-97 hover:text-green-97 hover:bg-dark-green-25 h-10 w-full rounded-sm'
+                : 'bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold',
+            )}
+            // 🔥 NAYA FIX: Jaate waqt state clean kar dein
+            onClick={() => {
+              setIsSuccess(false)
+              setSubmittedEmail('')
+            }}
+          >
+            Continue to Sign in
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -231,10 +285,10 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
         <Field>
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting || isPending}
+            disabled={form.formState.isSubmitting}
             className="bg-green-70 hover:bg-green-80 text-foreground h-10 w-full rounded-sm font-semibold disabled:cursor-not-allowed disabled:opacity-80"
           >
-            {form.formState.isSubmitting || isPending ? (
+            {form.formState.isSubmitting ? (
               <span className="flex items-center gap-2">
                 <svg
                   className="text-foreground h-5 w-5 animate-spin"
@@ -271,7 +325,7 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
           <Button
             variant="outline"
             type="button"
-            disabled={form.formState.isSubmitting || isGoogleLoading || isPending}
+            disabled={form.formState.isSubmitting || isGoogleLoading}
             onClick={() => {
               setIsGoogleLoading(true)
               window.location.href = `/api/auth/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
@@ -330,4 +384,32 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       </FieldGroup>
     </form>
   )
+}
+
+// Ise aap apne helpers ya utils file me rakh sakte hain, ya component me hi define kar sakte hain
+// Naya aur Smart Email Provider Helper
+function getEmailProviderUrl(email: string) {
+  if (!email) return null
+
+  const domain = email.split('@')[1]?.toLowerCase()
+  const encodedEmail = encodeURIComponent(email)
+
+  if (['gmail.com', 'googlemail.com'].includes(domain)) {
+    // 🔥 FIX: Google Account Chooser ka use karke specific email par redirect
+    return `https://accounts.google.com/AccountChooser?Email=${encodedEmail}&continue=https://mail.google.com/mail/`
+  }
+
+  if (['outlook.com', 'hotmail.com', 'live.com'].includes(domain)) {
+    return 'https://outlook.live.com/mail/0/inbox'
+  }
+
+  if (['yahoo.com', 'ymail.com'].includes(domain)) {
+    return 'https://mail.yahoo.com'
+  }
+
+  if (['icloud.com', 'me.com', 'mac.com'].includes(domain)) {
+    return 'https://www.icloud.com/mail'
+  }
+
+  return null // Agar custom domain hai toh button hide rahega
 }

@@ -1,19 +1,19 @@
-import { getSafeCallbackUrl } from '@/lib/safe-redirect'
+// src/app/(frontend)/auth/signup/page.tsx
+import { Suspense } from 'react'
 import SignupForm from './signup-form'
 
-type PageProps = {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
-
-export default async function SignupPage(props: PageProps) {
-  const searchParams = await props.searchParams
-
-  // 🔒 Open Redirect protection
-  const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl, '/account/profile')
-
+export default function SignupPage() {
   return (
     <div className="mx-auto w-full max-w-md">
-      <SignupForm callbackUrl={callbackUrl} />
+      <Suspense
+        fallback={
+          <div className="flex w-full items-center justify-center py-10">
+            <div className="border-t-green-70 h-8 w-8 animate-spin rounded-full border-4 border-white/10"></div>
+          </div>
+        }
+      >
+        <SignupForm />
+      </Suspense>
     </div>
   )
 }

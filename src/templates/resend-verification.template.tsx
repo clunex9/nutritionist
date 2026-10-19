@@ -95,7 +95,7 @@ export const resendVerificationTemplate = async (args: { token: string; user: Us
   // User ke role ke hisaab se verification route decide karna
   const verifyURL = hasCmsAccess(user)
     ? `${serverURL}/cms/verify/${token}`
-    : `${serverURL}/auth/verify-email/${token}`
+    : `${serverURL}/auth/verify/${token}`
 
   // React Email component ko HTML string me render karna
   const emailHtml = await render(

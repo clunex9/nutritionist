@@ -1,18 +1,18 @@
-// src/app/(frontend)/auth/signin/page.tsx
+import { Suspense } from 'react'
 import SigninForm from './signin-form'
-import { getSafeCallbackUrl } from '@/lib/safe-redirect'
 
-type PageProps = {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
-
-export default async function SigninPage(props: PageProps) {
-  const searchParams = await props.searchParams
-  const callbackUrl = getSafeCallbackUrl(searchParams?.callbackUrl, '/account/profile')
-
+export default function SigninPage() {
   return (
     <div className="mx-auto w-full max-w-md">
-      <SigninForm callbackUrl={callbackUrl} />
+      <Suspense
+        fallback={
+          <div className="flex w-full items-center justify-center py-10">
+            <div className="border-t-green-70 h-8 w-8 animate-spin rounded-full border-4 border-white/10"></div>
+          </div>
+        }
+      >
+        <SigninForm />
+      </Suspense>
     </div>
   )
 }

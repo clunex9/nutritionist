@@ -146,6 +146,7 @@ export async function GET(req: NextRequest) {
       const newUser = await payload.create({
         collection: 'users',
         overrideAccess: true,
+        disableVerificationEmail: true,
         data: {
           email: userEmail,
           name: googleUser.name || 'User',
