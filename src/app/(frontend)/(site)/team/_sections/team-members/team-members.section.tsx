@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-// 🔥 Naya simple type (Payload ke heavy types ki yahan zaroorat nahi)
 type CleanTeamMember = {
   id: string
   name: string
@@ -14,25 +13,39 @@ type CleanTeamMember = {
 }
 
 export default function TeamMembersSection({ data = [] }: { data: CleanTeamMember[] }) {
+  // 🔥 Optimization 1: Single Pass Grouping O(N) instead of O(N * M)
   const teamSections = useMemo(() => {
-    const uniqueDepts = Array.from(new Set(data.map((m) => m.department).filter(Boolean)))
+    // Ek dictionary banayi jo sirf 1 baar loop chalkar sabko apne-apne department me daal degi
+    const groupMap = data.reduce(
+      (acc, member) => {
+        if (!member.department) return acc
 
-    return uniqueDepts.map((deptName) => ({
+        if (!acc[member.department]) {
+          acc[member.department] = []
+        }
+        acc[member.department].push(member)
+
+        return acc
+      },
+      {} as Record<string, CleanTeamMember[]>,
+    )
+
+    // Dictionary ko wapas array me convert kiya Tabs ke format me
+    return Object.entries(groupMap).map(([deptName, members]) => ({
       label: deptName,
-      value: deptName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '',
-      members: data.filter((m) => m.department === deptName),
+      value: deptName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      members,
     }))
   }, [data])
 
-  const defaultTab = teamSections[0]?.value || ''
-  const [activeTab, setActiveTab] = useState(defaultTab)
-
   if (!teamSections || teamSections.length === 0) return null
+
+  const defaultTab = teamSections[0].value
 
   return (
     <section id="team-members" className="scroll-mt-10 pb-7.5 lg:pb-10">
       <div className="container">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full gap-0">
+        <Tabs defaultValue={defaultTab} className="w-full gap-0">
           <TabsList className="bg-dark-green-20 text-background flex h-auto! w-full scrollbar-none flex-nowrap justify-start gap-2 overflow-x-auto rounded-t-none rounded-b-lg px-4 py-6 [-ms-overflow-style:none] lg:px-20 [&::-webkit-scrollbar]:hidden">
             {teamSections.map(({ label, value }) => (
               <TabsTrigger
@@ -45,12 +58,13 @@ export default function TeamMembersSection({ data = [] }: { data: CleanTeamMembe
             ))}
           </TabsList>
 
-          {teamSections.map(({ value, members }) => (
-            <TabsContent key={value} value={value} className="mt-7.5 lg:mt-10">
-              {activeTab === value && (
+          {teamSections.map(({ value, members }) => {
+            const isDefaultTab = value === defaultTab
+
+            return (
+              <TabsContent key={value} value={value} className="mt-7.5 lg:mt-10">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                   {members.map((member, index) => {
-                    const isDefaultTab = value === defaultTab
                     const shouldPreload = isDefaultTab && index < 4
 
                     return (
@@ -62,9 +76,9 @@ export default function TeamMembersSection({ data = [] }: { data: CleanTeamMembe
                     )
                   })}
                 </div>
-              )}
-            </TabsContent>
-          ))}
+              </TabsContent>
+            )
+          })}
         </Tabs>
       </div>
     </section>
@@ -75,7 +89,7 @@ function TeamMemberCard({
   member,
   shouldPreload,
 }: {
-  member: CleanTeamMember // Naya simple type
+  member: CleanTeamMember
   shouldPreload: boolean
 }) {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -93,12 +107,11 @@ function TeamMemberCard({
 
         {member.imageUrl && (
           <Image
-            src={member.imageUrl} // Direct string use ho rahi hai
+            src={member.imageUrl}
             alt={member.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
             priority={shouldPreload}
-            decoding={shouldPreload ? 'sync' : 'async'}
             onLoad={() => setIsLoaded(true)}
             className={`relative z-10 h-full w-full object-contain pt-5 transition-opacity duration-500 ease-in-out ${
               isLoaded ? 'opacity-100' : 'opacity-0'

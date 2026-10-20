@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-// 👇 buttonVariants import karna mat bhoolna
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'

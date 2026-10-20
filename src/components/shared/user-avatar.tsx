@@ -83,7 +83,6 @@ export default function UserAvatar({
               setIsLoading(false) // Shimmer hatao
               setHasError(true) // Error state set karo taaki fallback dikhe
             }}
-            onLoadingComplete={() => setIsLoading(false)}
           />
         </>
       ) : (

@@ -8,6 +8,7 @@ import mail from '@/assets/svg/mail.svg'
 import call from '@/assets/svg/call.svg'
 import pin from '@/assets/svg/pin.svg'
 import Image from 'next/image'
+import { Suspense } from 'react'
 
 export default function Footer() {
   return (
@@ -63,8 +64,15 @@ export default function Footer() {
           </div>
 
           <div className="text-background mt-4 text-sm xl:mt-0">
-            {/* ✅ Server-side static error fix */}
-            © <CopyrightYear /> Nutritionist. All rights reserved.
+            ©{' '}
+            <Suspense
+              fallback={
+                <span className="inline-block h-4 w-10 animate-pulse rounded bg-white/20 align-middle"></span>
+              }
+            >
+              <CopyrightYear />
+            </Suspense>{' '}
+            Nutritionist. All rights reserved.
           </div>
         </div>
       </div>

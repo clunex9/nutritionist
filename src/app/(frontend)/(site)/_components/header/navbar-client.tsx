@@ -49,14 +49,22 @@ const navlinks: { name: string; url: string }[] = [
 export default function NavbarClient({ user }: { user: User | null }) {
   const pathname = usePathname()
   const router = useRouter()
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [isLoggingOut, startLogout] = useTransition()
-  const [isLogoutSuccess, setIsLogoutSuccess] = useState(false)
+
+  const [isApiLoading, setIsApiLoading] = useState(false)
+  const [isRouting, startRouting] = useTransition()
+
+  const isLoggingOut = isApiLoading || isRouting
+
   const canAccessCms = Boolean(user && hasCmsAccess(user))
   const lenis = useLenis()
 
-  // 🔥 Dropdown ya Mobile Menu open hone par background scroll rok dega
+  const checkIsActive = (url: string) => {
+    return url === '/' ? pathname === url : pathname === url || pathname.startsWith(`${url}/`)
+  }
+
   useEffect(() => {
     if (isMenuOpen || isDropdownOpen) {
       lenis?.stop()
@@ -72,48 +80,37 @@ export default function NavbarClient({ user }: { user: User | null }) {
     }
   }, [user])
 
-  // Route refresh complete hone par toast dikhane ke liye
-  useEffect(() => {
-    if (!isLoggingOut && isLogoutSuccess) {
-      toast.add({ type: 'success', title: 'See you again soon! 👋 ' })
-      setIsLogoutSuccess(false) // Flag ko wapas reset karein
-    }
-  }, [isLoggingOut, isLogoutSuccess])
-
   const handleLogout = useCallback(
-    (e?: React.MouseEvent) => {
+    async (e?: React.MouseEvent) => {
       if (e) e.preventDefault()
       if (isLoggingOut) return
 
-      startLogout(async () => {
-        try {
-          const result = await logoutAction()
+      setIsApiLoading(true)
 
-          if (result?.success) {
-            setIsLogoutSuccess(true)
-            notifyAuthChange()
+      try {
+        const result = await logoutAction()
+
+        if (result?.success) {
+          // 🔥 CLEANUP 2: Faltu state aur useEffect hataya, Toast direct yahan call kiya
+          toast.add({ type: 'success', title: 'See you again soon! 👋 ' })
+          notifyAuthChange()
+
+          startRouting(() => {
             router.push('/')
             router.refresh()
-          } else {
-            toast.add({ type: 'error', title: 'Failed to logout. Please try again.' })
-          }
-        } catch {
-          toast.add({ type: 'error', title: 'Network error. Please try again.' })
-        }
-      })
-    },
-    [isLoggingOut, router],
-  )
+          })
 
-  const handleLinkClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, url: string, isMobile: boolean = false) => {
-      if (isMobile) setIsMenuOpen(false)
-      if (url === pathname) {
-        e.preventDefault()
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+          setIsApiLoading(false)
+        } else {
+          toast.add({ type: 'error', title: 'Failed to logout. Please try again.' })
+          setIsApiLoading(false)
+        }
+      } catch {
+        toast.add({ type: 'error', title: 'Network error. Please try again.' })
+        setIsApiLoading(false)
       }
     },
-    [pathname],
+    [isLoggingOut, router],
   )
 
   const toggleMenu = useCallback(() => {
@@ -129,7 +126,6 @@ export default function NavbarClient({ user }: { user: User | null }) {
           href="/"
           aria-label="Go to Nutritionist Home"
           className="relative z-40 flex items-center justify-center gap-2"
-          onClick={(e) => handleLinkClick(e, '/')}
         >
           <Image src={lightLogo} alt="light-logo" width={34} height={34} />
           <Image src={logoBrandName} alt="light-logo" width={100} height={20} />
@@ -139,14 +135,12 @@ export default function NavbarClient({ user }: { user: User | null }) {
         <div className="hidden md:block">
           <ul className="flex items-center gap-6">
             {navlinks.map(({ name, url }) => {
-              const isActive =
-                url === '/' ? pathname === url : pathname === url || pathname.startsWith(`${url}/`)
+              const isActive = checkIsActive(url)
 
               return (
                 <li key={name}>
                   <Link
                     href={url}
-                    onClick={(e) => handleLinkClick(e, url)}
                     className={cn(
                       'font-semibold transition-colors',
                       isActive ? 'text-green-70' : 'text-green-97 hover:text-green-90',
@@ -294,7 +288,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
           )}
         </button>
 
-        {/* Backdrop Overlay - ✅ Optimized transition-[opacity,visibility] for 60FPS blur */}
+        {/* Backdrop Overlay */}
         <div
           aria-hidden="true"
           className={cn(
@@ -306,7 +300,7 @@ export default function NavbarClient({ user }: { user: User | null }) {
           onClick={toggleMenu}
         />
 
-        {/* Mobile Drawer - ✅ Shadow only rendered when menu is open */}
+        {/* Mobile Drawer */}
         <aside
           aria-hidden={!isMenuOpen}
           className={cn(
@@ -320,16 +314,13 @@ export default function NavbarClient({ user }: { user: User | null }) {
           <div className="flex-1 overflow-y-auto px-10 pt-28 pb-8">
             <ul className="flex flex-col gap-7">
               {navlinks.map(({ name, url }) => {
-                const isActive =
-                  url === '/'
-                    ? pathname === url
-                    : pathname === url || pathname.startsWith(`${url}/`)
+                const isActive = checkIsActive(url)
 
                 return (
                   <li key={name}>
                     <Link
                       href={url}
-                      onClick={(e) => handleLinkClick(e, url, true)}
+                      onClick={() => setIsMenuOpen(false)}
                       className="group flex w-fit items-center gap-4"
                     >
                       <span
@@ -362,7 +353,6 @@ export default function NavbarClient({ user }: { user: User | null }) {
             <div className="border-t border-white/10 pt-6">
               {user ? (
                 <div className="flex flex-col gap-5">
-                  {/* Clean Profile Info */}
                   <Link
                     href="/account/profile"
                     onClick={() => setIsMenuOpen(false)}

@@ -35,7 +35,16 @@ async function getCachedSingleBlog(id: string) {
     const blog = await payload.findByID({
       collection: 'blogs',
       id: id,
-      depth: 2,
+      depth: 1,
+      select: {
+        title: true,
+        category: true,
+        description: true,
+        image: true,
+        author: true,
+        createdAt: true,
+        readTime: true,
+      },
     })
     return blog as unknown as Blog
   } catch (error) {
@@ -79,7 +88,6 @@ function BlogSkeleton() {
             </div>
             {/* Actions Skeleton */}
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-md bg-gray-200"></div>
               <div className="size-10 rounded-md bg-gray-200"></div>
               <div className="size-10 rounded-md bg-gray-200"></div>
             </div>

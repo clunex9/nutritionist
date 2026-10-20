@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
   },
   compress: false,
   cacheComponents: true,
+  partialPrefetching: true,
 
   images: {
     dangerouslyAllowLocalIP: process.env.VERCEL !== '1',

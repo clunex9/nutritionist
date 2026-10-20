@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import type { User } from '@/payload-types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { connection } from 'next/server'
 
 export async function getServerUser(): Promise<User | null> {
   try {
@@ -9,6 +10,8 @@ export async function getServerUser(): Promise<User | null> {
     const token = cookieStore.get('payload-token')?.value
 
     if (!token) return null
+
+    await connection()
 
     const payload = await getPayload({ config: configPromise })
 
