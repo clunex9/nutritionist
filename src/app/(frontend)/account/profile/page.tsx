@@ -20,6 +20,7 @@ export default async function ProfilePage() {
     email: user.email || '',
     gender: (user.gender as 'male' | 'female' | 'other') || null,
     avatarUrl: avatarObj?.thumbnailURL || avatarObj?.url || '',
+    fullSizeAvatarUrl: avatarObj?.url || avatarObj?.thumbnailURL || '',
     avatarId: avatarObj?.id || '',
     avatarUpdatedAt: avatarObj?.updatedAt || '',
   }

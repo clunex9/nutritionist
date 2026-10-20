@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
 
   images: {
-    dangerouslyAllowLocalIP: process.env.NODE_ENV !== 'production',
+    dangerouslyAllowLocalIP: process.env.VERCEL !== '1',
     remotePatterns: [
       {
         protocol: 'https',
@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com', // For Vercel Blob images
+      },
+      {
+        protocol: 'https',
+        hostname: 'google.com', // For Vercel Blob images
       },
       {
         protocol: 'https',

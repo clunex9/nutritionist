@@ -39,14 +39,22 @@ export default function BlogsClient({ blogs }: BlogsClientProps) {
   const [bookmarks, setBookmarks] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // 1. Array ko ek string mein convert kar lein (e.g., "id1,id2,id3")
+  const blogIdsString = blogs.map((b) => b.id).join(',')
+
   useEffect(() => {
     const fetchUserData = async () => {
-      const blogIds = blogs.map((b) => b.id)
+      // 2. String se wapas array bana lein action mein bhejne ke liye
+      const blogIds = blogIdsString ? blogIdsString.split(',') : []
+
       if (blogIds.length > 0) {
         try {
           const data = await getUserInteractions(blogIds)
-          setFavorites(data.favorites)
-          setBookmarks(data.bookmarks)
+          // Ensure karein ki data structure match ho raha hai
+          setFavorites(data?.favorites || [])
+          setBookmarks(data?.bookmarks || [])
+        } catch (error) {
+          console.error('Error fetching user interactions:', error)
         } finally {
           setIsLoading(false)
         }
@@ -56,7 +64,7 @@ export default function BlogsClient({ blogs }: BlogsClientProps) {
     }
 
     fetchUserData()
-  }, [blogs])
+  }, [blogIdsString]) // ✅ SAHI TARIKA: Ab dependency array mein array nahi, ek string hai
 
   return (
     <section id="blogs" className="scroll-mt-10 py-10 lg:py-16">

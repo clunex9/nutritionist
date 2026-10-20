@@ -1,9 +1,9 @@
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import type { Testimonial, TestimonialAvatar } from '@/payload-types' // Avatar type import kiya
 import { cacheLife, cacheTag } from 'next/cache'
 
 import TestimonialSection from './testimonial.section'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 async function getCachedTestimonials() {
   'use cache'

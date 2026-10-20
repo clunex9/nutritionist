@@ -1,36 +1,33 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
-import { cacheLife, cacheTag } from 'next/cache' // 🔥 Naye imports (unstable_cache hata diya)
+import { cacheLife, cacheTag } from 'next/cache'
+import { Suspense } from 'react'
 
 // Components
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 
-// Payload Imports
+// Types
+import type { Blog, User, BlogImage } from '@/payload-types'
+import SingleBlogActions from './single-blogs-action'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-
-// Types
-import type { Blog, User, BlogImage, Avatar as AvatarType } from '@/payload-types'
-import SingleBlogActions from './single-blogs-action'
+import Link from 'next/link'
+import UserAvatar from '@/components/shared/user-avatar'
+import BlogCoverImage from '@/components/shared/blog-cover-image'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// 🔥 Naya Next.js 16 Caching Logic for Single Blog
-// 'id' automatically cache key ban jayega
 async function getCachedSingleBlog(id: string) {
-  'use cache' // 👈 1. Directive lagaya
-  cacheLife('hours') // 👈 2. Cache life
-  cacheTag('blogs') // 👈 3. Tag (taaki admin update kare toh ye bhi refresh ho)
+  'use cache'
+  cacheLife('hours')
+  cacheTag('blogs')
 
   const payload = await getPayload({ config: configPromise })
 
@@ -38,58 +35,99 @@ async function getCachedSingleBlog(id: string) {
     const blog = await payload.findByID({
       collection: 'blogs',
       id: id,
-      depth: 2, // 2 zaroori hai avatar URL ke liye
+      depth: 2,
     })
     return blog as unknown as Blog
   } catch (error) {
-    return null // NotFound handle karne ke liye null return karenge
+    return null
   }
 }
 
-export default async function BlogSinglePage({ params }: PageProps) {
-  const { id } = await params
+// 🔥 Proper Skeleton Loading Component
+function BlogSkeleton() {
+  return (
+    <article className="min-h-screen bg-gray-50/30 pt-6 pb-16 lg:pt-10">
+      <div className="container mx-auto max-w-4xl animate-pulse px-4">
+        {/* Breadcrumb Skeleton */}
+        <div className="mb-8 flex items-center gap-2">
+          <div className="h-4 w-12 rounded bg-gray-200"></div>
+          <div className="h-4 w-4 rounded bg-gray-200"></div>
+          <div className="h-4 w-12 rounded bg-gray-200"></div>
+          <div className="h-4 w-4 rounded bg-gray-200"></div>
+          <div className="h-4 w-32 rounded bg-gray-200"></div>
+        </div>
 
-  // 1. Sirf Cached Blog Fetch Karein (Super-fast RAM se)
+        {/* Header Skeleton */}
+        <header className="mb-10 text-center md:text-left">
+          {/* Category Badge */}
+          <div className="mb-4 inline-block h-8 w-24 rounded-full bg-[#C5E1A5]/50"></div>
+
+          {/* Title */}
+          <div className="mx-auto mb-3 h-10 w-3/4 rounded bg-gray-200 md:mx-0 md:h-12 lg:h-14"></div>
+          <div className="mx-auto mb-6 h-10 w-1/2 rounded bg-gray-200 md:mx-0 md:h-12 lg:h-14"></div>
+
+          {/* Author Box */}
+          <div className="border-green-80 flex flex-col items-center justify-between gap-6 rounded-lg border bg-white p-6 md:flex-row md:gap-4">
+            <div className="flex w-full items-center justify-center gap-4 md:w-auto md:justify-start">
+              {/* Avatar */}
+              <div className="size-10 shrink-0 rounded-md bg-gray-200 lg:size-12.5"></div>
+              {/* Name & Date */}
+              <div className="flex flex-col gap-2">
+                <div className="h-5 w-32 rounded bg-gray-200"></div>
+                <div className="h-4 w-48 rounded bg-gray-100"></div>
+              </div>
+            </div>
+            {/* Actions Skeleton */}
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-md bg-gray-200"></div>
+              <div className="size-10 rounded-md bg-gray-200"></div>
+              <div className="size-10 rounded-md bg-gray-200"></div>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero Image Skeleton */}
+        <div className="mb-12 aspect-video w-full rounded-lg bg-gray-200"></div>
+
+        {/* Content Skeleton */}
+        <div className="space-y-4">
+          <div className="h-5 w-full rounded bg-gray-200"></div>
+          <div className="h-5 w-[95%] rounded bg-gray-200"></div>
+          <div className="h-5 w-[90%] rounded bg-gray-200"></div>
+          <div className="h-5 w-[85%] rounded bg-gray-200"></div>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+// Extracted Data Component
+async function BlogDetails({ params }: PageProps) {
+  const { id } = await params
   const blog = await getCachedSingleBlog(id)
 
   if (!blog) return notFound()
 
-  // 2. Type Guards & Image Extraction
   const coverImage =
     typeof blog.image === 'object' && blog.image !== null ? (blog.image as BlogImage) : null
   const author =
     typeof blog.author === 'object' && blog.author !== null ? (blog.author as User) : null
-  const authorAvatar =
-    typeof author?.avatar === 'object' && author?.avatar !== null
-      ? (author.avatar as AvatarType)
-      : null
 
   const finalCoverImageUrl = coverImage?.url || ''
-  const finalAvatarUrl = authorAvatar?.thumbnailURL || authorAvatar?.url || ''
-
-  const initials = author?.name
-    ? author?.name
-        .trim()
-        .split(/\s+/)
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase()
-    : 'U'
 
   return (
     <article className="min-h-screen bg-gray-50/30 pt-6 pb-16 lg:pt-10">
       <div className="container mx-auto max-w-4xl px-4">
-        {/* 🟢 SHADCN BREADCRUMB */}
+        {/* Breadcrumb */}
         <div className="mb-8">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                <Link href={'/'}> Home</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/blogs">Blogs</BreadcrumbLink>
+                <Link href={'/blogs'}>Blogs</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -101,7 +139,7 @@ export default async function BlogSinglePage({ params }: PageProps) {
           </Breadcrumb>
         </div>
 
-        {/* 🟢 HEADER SECTION */}
+        {/* Header */}
         <header className="mb-10 text-center md:text-left">
           <span className="text-dark-green-20 mb-4 inline-block rounded-full bg-[#C5E1A5]/30 px-4 py-1.5 text-sm font-semibold tracking-wider uppercase">
             {blog.category}
@@ -111,24 +149,13 @@ export default async function BlogSinglePage({ params }: PageProps) {
           </h1>
 
           <div className="border-green-80 flex flex-col items-center justify-between gap-6 rounded-lg border bg-white p-6 md:flex-row md:gap-4">
-            {/* Author Info */}
             <div className="flex items-center gap-4 text-left">
               <div className="bg-dark-green-15 relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md lg:size-12.5">
-                <Avatar className="bg-dark-green-15 size-10 shrink-0 overflow-hidden rounded-md lg:size-12.5">
-                  {finalAvatarUrl ? (
-                    <Image
-                      src={finalAvatarUrl}
-                      alt={author?.name || 'Author'}
-                      width={50}
-                      height={50}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <AvatarFallback className="text-green-95 bg-dark-green-15 rounded-md text-lg font-bold uppercase">
-                      {initials}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
+                <UserAvatar
+                  user={author}
+                  className="bg-dark-green-15 size-10 shrink-0 rounded-md lg:size-12.5"
+                  fallbackClassName="text-lg font-bold uppercase text-green-95"
+                />
               </div>
 
               <div className="flex flex-col">
@@ -146,32 +173,21 @@ export default async function BlogSinglePage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Actions: Client Component ko bulaya hai yahan 👇 */}
             <div className="flex items-center gap-3">
               <SingleBlogActions blogId={blog.id} />
             </div>
           </div>
         </header>
 
-        {/* 🔵 HERO IMAGE */}
-        <div className="border-green-85 relative mb-12 aspect-video w-full overflow-hidden rounded-lg border bg-gray-200">
-          {finalCoverImageUrl ? (
-            <Image
-              src={finalCoverImageUrl}
-              alt={blog.title}
-              fill
-              priority={true} // Ye hero image hai isliye priority zaroori hai
-              sizes="(max-width: 896px) 100vw, 896px"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-gray-400">
-              No Cover Image
-            </div>
-          )}
-        </div>
+        {/* Hero Image */}
+        <BlogCoverImage
+          src={finalCoverImageUrl}
+          alt={blog.title}
+          priority={true} // Hero image hai isliye priority true rahegi
+          className="border-green-85 relative mb-12 aspect-video w-full rounded-lg border"
+        />
 
-        {/* 🟠 MAIN CONTENT */}
+        {/* Main Content */}
         <div className="prose prose-lg prose-green prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 mx-auto max-w-none">
           <p className="mb-8 text-xl leading-relaxed font-medium text-gray-600">
             {blog.description}
@@ -180,5 +196,14 @@ export default async function BlogSinglePage({ params }: PageProps) {
         </div>
       </div>
     </article>
+  )
+}
+
+// Wrap the dynamic component in a Suspense boundary with the new Skeleton
+export default function BlogSinglePage({ params }: PageProps) {
+  return (
+    <Suspense fallback={<BlogSkeleton />}>
+      <BlogDetails params={params} />
+    </Suspense>
   )
 }

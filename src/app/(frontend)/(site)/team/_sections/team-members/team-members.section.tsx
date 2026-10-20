@@ -86,8 +86,8 @@ function TeamMemberCard({
         <div className="team-bg-pattern absolute inset-0 z-0 h-full w-full" />
 
         <div
-          className={`bg-green-90 absolute inset-0 z-0 h-full w-full transition-opacity duration-500 ease-in-out ${
-            isLoaded ? 'pointer-events-none opacity-0' : 'animate-pulse opacity-100'
+          className={`absolute inset-0 z-0 h-full w-full transition-opacity duration-500 ease-in-out ${
+            isLoaded ? 'pointer-events-none opacity-0' : 'skeleton-shimmer opacity-100'
           }`}
         />
 
@@ -100,7 +100,6 @@ function TeamMemberCard({
             priority={shouldPreload}
             decoding={shouldPreload ? 'sync' : 'async'}
             onLoad={() => setIsLoaded(true)}
-            unoptimized={process.env.NODE_ENV !== 'production'}
             className={`relative z-10 h-full w-full object-contain pt-5 transition-opacity duration-500 ease-in-out ${
               isLoaded ? 'opacity-100' : 'opacity-0'
             }`}

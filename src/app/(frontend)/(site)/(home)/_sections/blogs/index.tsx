@@ -1,6 +1,3 @@
-// Payload API imports
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { cacheLife, cacheTag } from 'next/cache'
 
 // Types
@@ -8,6 +5,8 @@ import type { Blog, BlogImage, User, Avatar as AvatarType } from '@/payload-type
 
 // Client Component Import
 import BlogsClient from './blogs-client'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 export async function getCachedLatestBlogs() {
   'use cache'

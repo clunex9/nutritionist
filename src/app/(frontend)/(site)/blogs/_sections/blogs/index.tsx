@@ -1,7 +1,7 @@
 import { cacheLife, cacheTag } from 'next/cache'
+import BlogsClientSection from './blogs-client.section' // 👈 Client UI import kiya
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import BlogsClientSection from './blogs-client.section' // 👈 Client UI import kiya
 
 async function getCachedAllBlogs() {
   'use cache'

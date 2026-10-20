@@ -1,12 +1,12 @@
 // src/actions/authActions.ts
 'use server'
 
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 import { resendVerificationTemplate } from '@/templates/resend-verification.template'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 // 👉 1. Login Action
 export async function loginAction(data: { email: string; password: string }) {
@@ -90,7 +90,6 @@ export async function logoutAction() {
 export async function resetPasswordAction(data: { token: string; password: string }) {
   try {
     const payload = await getPayload({ config: configPromise })
-
     const result = await payload.resetPassword({
       collection: 'users',
       data,

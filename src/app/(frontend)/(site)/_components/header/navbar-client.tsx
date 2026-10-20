@@ -26,12 +26,15 @@ import {
   LoaderCircleIcon,
 } from '@hugeicons/core-free-icons'
 import { toast } from '@/components/ui/toast'
-import Logo from '@/components/shared/logo'
 import { logoutAction } from '@/actions/auth.action'
 import { notifyAuthChange } from '@/lib/auth-sync'
 import type { User } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import UserAvatar from '@/components/shared/user-avatar'
+import lightLogo from '@/assets/svg/light-logo.svg'
+import logoBrandName from '@/assets/svg/logo-brand-name.svg'
+import Image from 'next/image'
+import { useLenis } from 'lenis/react'
 
 const navlinks: { name: string; url: string }[] = [
   { name: 'Home', url: '/' },
@@ -51,6 +54,16 @@ export default function NavbarClient({ user }: { user: User | null }) {
   const [isLoggingOut, startLogout] = useTransition()
   const [isLogoutSuccess, setIsLogoutSuccess] = useState(false)
   const canAccessCms = Boolean(user && hasCmsAccess(user))
+  const lenis = useLenis()
+
+  // 🔥 Dropdown ya Mobile Menu open hone par background scroll rok dega
+  useEffect(() => {
+    if (isMenuOpen || isDropdownOpen) {
+      lenis?.stop()
+    } else {
+      lenis?.start()
+    }
+  }, [isMenuOpen, isDropdownOpen, lenis])
 
   useEffect(() => {
     if (!user) {
@@ -115,10 +128,11 @@ export default function NavbarClient({ user }: { user: User | null }) {
         <Link
           href="/"
           aria-label="Go to Nutritionist Home"
-          className="relative z-40"
+          className="relative z-40 flex items-center justify-center gap-2"
           onClick={(e) => handleLinkClick(e, '/')}
         >
-          <Logo />
+          <Image src={lightLogo} alt="light-logo" width={34} height={34} />
+          <Image src={logoBrandName} alt="light-logo" width={100} height={20} />
         </Link>
 
         {/* Desktop Navigation */}

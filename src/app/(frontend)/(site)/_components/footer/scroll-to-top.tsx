@@ -16,7 +16,7 @@ export default function ScrollToTop({ className }: { className?: string }) {
         aria-label="scroll-to-top"
         className="bg-dark-green-20 hover:bg-dark-green-25 flex size-10 cursor-pointer items-center justify-center rounded-md"
       >
-        <HugeiconsIcon icon={ArrowUp02Icon} className="text-background" />
+        <HugeiconsIcon icon={ArrowUp02Icon} size={20} className="text-background" />
       </Button>
     </div>
   )

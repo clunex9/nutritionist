@@ -186,6 +186,7 @@
   }
   html {
     @apply font-sans;
+    scrollbar-gutter: stable;
   }
 }
 
@@ -288,6 +289,3 @@
 }
 
 
-#smooth-content {
-  will-change: transform;
-}

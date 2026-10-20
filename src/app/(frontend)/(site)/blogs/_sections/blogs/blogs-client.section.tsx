@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import BlogCoverImage from '@/components/shared/blog-cover-image'
 
 // 🔥 Naya simple type jisme koi heavy payload object nahi hai
 type CleanBlog = {
@@ -81,25 +81,16 @@ export default function BlogsClientSection({ blogs }: { blogs: CleanBlog[] }) {
                               </span>
                             </div>
 
-                            <div className="relative mb-8 ml-auto aspect-video w-[90%] overflow-hidden rounded-tl-lg rounded-tr-lg bg-gray-200 md:w-[80%] lg:w-[70%]">
-                              {article.imageUrl ? (
-                                <Image
-                                  src={article.imageUrl}
-                                  alt={article.title}
-                                  fill
-                                  priority={index < 2}
-                                  fetchPriority={index < 2 ? 'high' : 'auto'}
-                                  sizes="(max-width: 768px) 90vw, (max-width: 1200px) 40vw, 33vw"
-                                  // 🔥 CPU bachaane ke liye local me optimization band kiya
-                                  unoptimized={process.env.NODE_ENV !== 'production'}
-                                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center">
-                                  <span className="text-sm text-gray-500">No Image</span>
-                                </div>
-                              )}
-                            </div>
+                            <BlogCoverImage
+                              src={article.imageUrl}
+                              alt={article.title}
+                              priority={index < 2} // Pehle 2 cards fast load honge
+                              sizes="(max-width: 768px) 90vw, (max-width: 1200px) 40vw, 33vw"
+                              // Wrapper ki classes className me pass karein
+                              className="mb-8 ml-auto aspect-video w-[90%] rounded-tl-lg rounded-tr-lg md:w-[80%] lg:w-[70%]"
+                              // Image hover zoom effect imageClassName me pass karein
+                              imageClassName="transition-transform duration-500 hover:scale-105"
+                            />
 
                             <div className="flex grow flex-col items-start justify-center gap-4 xl:flex-row xl:items-center">
                               <div>

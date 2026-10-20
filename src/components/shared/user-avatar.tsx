@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import type { User, Avatar as AvatarType } from '@/payload-types'
-import { cn } from '@/lib/utils' // ✅ Fixed import path
+import { cn } from '@/lib/utils'
 
 interface UserAvatarProps {
   user?: User | null
@@ -28,21 +28,24 @@ export default function UserAvatar({
   fallbackClassName,
   imageClassName,
   sizes = '40px',
-  priority = false, // ✅ Default false rakhein taaki har jagah images force-preload na hon
+  priority = false,
   unoptimized = false,
   showSkeleton = true,
   children,
 }: UserAvatarProps) {
-  const [isLoading, setIsLoading] = useState(showSkeleton)
-  const imgRef = useRef<HTMLImageElement>(null)
+  // 🔥 1. Clean aur explicit states
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   const avatarObj =
     typeof user?.avatar === 'object' && user.avatar !== null ? (user.avatar as AvatarType) : null
 
+  // URL generate karna
   const displayAvatar = removed
     ? undefined
     : src || avatarObj?.thumbnailURL || avatarObj?.url || undefined
 
+  // Initials generate karna
   const initials = user?.name
     ? user.name
         .trim()
@@ -53,38 +56,43 @@ export default function UserAvatar({
         .toUpperCase()
     : 'U'
 
-  useEffect(() => {
-    if (!showSkeleton) return
-    if (!displayAvatar) {
-      setIsLoading(false)
-      return
-    }
-    setIsLoading(!imgRef.current?.complete)
-  }, [displayAvatar, showSkeleton])
+  // 🔥 2. Main Logic: Fallback kab dikhana hai?
+  // Agar URL hi nahi hai, YA phir image load hone me error aa gayi
+  const showFallback = !displayAvatar || hasError
 
   return (
     <Avatar className={cn('bg-dark-green-20 relative overflow-hidden rounded-md', className)}>
-      {displayAvatar ? (
+      {!showFallback ? (
+        /* 🔵 IMAGE WALA SCENARIO */
         <>
+          {/* Shimmer layer tabhi aayegi jab isLoading true ho */}
           {showSkeleton && isLoading && <div className="skeleton-shimmer absolute inset-0 z-20" />}
+
           <Image
-            ref={imgRef}
-            src={displayAvatar}
+            src={displayAvatar!}
             alt={user?.name || 'User avatar'}
             fill
             priority={priority}
             sizes={sizes}
             unoptimized={unoptimized}
-            onLoad={showSkeleton ? () => setIsLoading(false) : undefined}
-            onError={showSkeleton ? () => setIsLoading(false) : undefined}
             className={cn('z-10 object-cover', imageClassName)}
+            // Jaise hi image successfully load ho jaye, shimmer ko hata do
+            onLoad={() => setIsLoading(false)}
+            // Agar image broken hai ya fail ho jaye
+            onError={() => {
+              setIsLoading(false) // Shimmer hatao
+              setHasError(true) // Error state set karo taaki fallback dikhe
+            }}
+            onLoadingComplete={() => setIsLoading(false)}
           />
         </>
       ) : (
+        /* 🔵 NO IMAGE / ERROR WALA SCENARIO */
         <AvatarFallback className={cn('text-green-95 bg-transparent', fallbackClassName)}>
           {initials}
         </AvatarFallback>
       )}
+
       {children}
     </Avatar>
   )

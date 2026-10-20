@@ -44,6 +44,7 @@ export type CleanUser = {
   email: string
   gender: 'male' | 'female' | 'other' | null | undefined
   avatarUrl: string
+  fullSizeAvatarUrl: string
   avatarId: string
   avatarUpdatedAt: string
 }
@@ -85,7 +86,9 @@ export default function ProfileForm({ user }: { user: CleanUser | null }) {
   }, [savedAvatarKey, getValues, setValue])
 
   const fullSizeAvatar =
-    currentAvatarValue === null ? undefined : newAvatarPreview || user?.avatarUrl || undefined
+    currentAvatarValue === null
+      ? undefined
+      : newAvatarPreview || user?.fullSizeAvatarUrl || undefined
 
   const initials = user?.name
     ? user.name

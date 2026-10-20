@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { revalidatePath } from 'next/cache'
 import { getSafeCallbackUrl } from '@/lib/safe-redirect'
 import crypto from 'crypto'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 async function uploadGoogleAvatarToPayload(payload: any, imageUrl: string) {
   try {

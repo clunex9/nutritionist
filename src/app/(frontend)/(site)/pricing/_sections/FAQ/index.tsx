@@ -1,11 +1,13 @@
 import { Button } from '@/components/ui/button'
-
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import Image from 'next/image'
+import lightLogo from '@/assets/svg/light-logo.svg'
+import plus from '@/assets/svg/plus.svg'
 
 export default function FAQ() {
   const items = [
@@ -70,20 +72,13 @@ export default function FAQ() {
                 <AccordionTrigger className="text-gray-15 font text-lg font-medium hover:no-underline aria-expanded:font-semibold **:data-[slot=accordion-trigger-icon]:hidden">
                   {item.trigger}
                   <div className="text-dark-green-40 bg-dark-green-15 shrink-0 rounded-md p-1">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    <Image
+                      src={plus}
+                      alt="plus-icon"
+                      width={20}
+                      height={20}
                       className="text-green-95 size-5 transition-transform duration-300 group-aria-expanded/accordion-trigger:rotate-45"
-                    >
-                      <path d="M5 12h14" />
-                      <path d="M12 5v14" />
-                    </svg>
+                    />
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-gray-20 text-base font-medium lg:pr-14">
@@ -97,30 +92,7 @@ export default function FAQ() {
         {/* ── Ask Question Box (Takes 1/3 space on large screens) ── */}
         <div className="bg-green-95 border-green-85 flex w-full flex-col items-center justify-center gap-6 rounded-lg border p-6 text-center lg:w-1/3 lg:gap-10 lg:p-10">
           <div>
-            <svg
-              width="100"
-              height="100"
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M37.5513 30.5551C26.1019 19.4152 33.9886 0 49.9632 0C65.9378 0 73.8245 19.4152 62.3751 30.5552L49.9632 42.6316L37.5513 30.5551Z"
-                fill="#CBEA7B"
-              />
-              <path
-                d="M37.6216 69.4449C26.1722 80.5848 34.0589 100 50.0335 100C66.0081 100 73.8948 80.5848 62.4454 69.4448L50.0335 57.3684L37.6216 69.4449Z"
-                fill="#CBEA7B"
-              />
-              <path
-                d="M30.5551 62.4472C19.4152 73.8966 0 66.0099 0 50.0353C0 34.0607 19.4152 26.174 30.5552 37.6235L42.6316 50.0353L30.5551 62.4472Z"
-                fill="#CBEA7B"
-              />
-              <path
-                d="M69.4449 62.3755C80.5848 73.8249 100 65.9382 100 49.9636C100 33.989 80.5848 26.1023 69.4448 37.5517L57.3684 49.9636L69.4449 62.3755Z"
-                fill="#CBEA7B"
-              />
-            </svg>
+            <Image src={lightLogo} alt="light-logo" width={100} height={100} />
           </div>
 
           <div className="flex flex-col gap-2">

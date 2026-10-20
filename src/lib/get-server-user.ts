@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
+import type { User } from '@/payload-types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import type { User } from '@/payload-types'
 
 export async function getServerUser(): Promise<User | null> {
   try {

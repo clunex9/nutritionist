@@ -1,14 +1,13 @@
-import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { BookmarkIcon } from '@hugeicons/core-free-icons'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { cookies } from 'next/headers'
 import RemoveButton from '@/components/shared/remove-button'
 import type { BlogImage } from '@/payload-types'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 export default async function BookmarksPage() {
   const cookieStore = await cookies()

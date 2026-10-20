@@ -1,16 +1,22 @@
 import React from 'react'
 import Link from 'next/link'
-import signinImage from '@/images/signin-img.jpg'
-import Logo from '@/components/shared/logo'
+import authImage from '@/assets/images/auth.jpg'
 import Image from 'next/image'
+import lightLogo from '@/assets/svg/light-logo.svg'
+import logoBrandName from '@/assets/svg/logo-brand-name.svg'
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-dark-green-15 grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href={'/'} className="relative z-40">
-            <Logo />
+          <Link
+            href="/"
+            aria-label="Go to Nutritionist Home"
+            className="relative z-40 flex items-center justify-center gap-2"
+          >
+            <Image src={lightLogo} alt="light-logo" width={34} height={34} />
+            <Image src={logoBrandName} alt="light-logo" width={100} height={20} />
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -19,7 +25,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </div>
       <div className="bg-muted relative hidden lg:block">
         <Image
-          src={signinImage}
+          src={authImage}
           alt="Authentication Background"
           fill
           priority // 🔥 LCP ke liye priority zaroori hai, isko rehne dein

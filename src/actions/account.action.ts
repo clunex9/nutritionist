@@ -1,10 +1,10 @@
 // src/actions/accountActions.ts
 'use server'
 
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { revalidatePath } from 'next/cache'
 import { getServerUser } from '@/lib/get-server-user'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024 // 2MB

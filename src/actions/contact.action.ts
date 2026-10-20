@@ -1,12 +1,10 @@
 // src/actions/contactActions.ts
 'use server'
 
-import { getPayload } from 'payload'
-import configPromise from '@payload-config' // Payload v3 ka default config import
-import { revalidatePath } from 'next/cache'
-
 // Same Zod schema jo frontend par hai (Security ke liye backend par bhi check karenge)
 import * as z from 'zod'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),

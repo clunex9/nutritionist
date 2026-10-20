@@ -1,9 +1,9 @@
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import type { Team, TeamAvatar } from '@/payload-types' // Avatar type import kiya
 import { cacheLife, cacheTag } from 'next/cache'
 
 import TeamMembersSection from './team-members.section'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 async function getCachedTeam() {
   'use cache'
