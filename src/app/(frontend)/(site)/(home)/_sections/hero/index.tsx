@@ -1,5 +1,3 @@
-'use client'
-
 import Image from 'next/image'
 import heroImage from './images/hero-image.webp'
 import userOne from './images/user-1.jpg'

@@ -91,11 +91,7 @@ export default function BlogsClient({ blogs }: BlogsClientProps) {
                   src={blog.coverImageUrl}
                   alt={blog.title}
                   fill
-                  priority={index < 2}
-                  fetchPriority={index < 2 ? 'high' : 'auto'}
-                  decoding={index < 2 ? 'sync' : 'async'}
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  unoptimized={process.env.NODE_ENV !== 'production'} // 🔥 Local lag fix
                   className="object-cover transition-transform duration-500 hover:scale-105"
                 />
               ) : (
