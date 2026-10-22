@@ -17,10 +17,11 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '4mb',
     },
+    optimizePackageImports: ['@hugeicons/react', '@hugeicons/core-free-icons'],
   },
   compress: false,
   cacheComponents: true,
-  partialPrefetching: true,
+  reactCompiler: true,
 
   images: {
     dangerouslyAllowLocalIP: process.env.VERCEL !== '1',

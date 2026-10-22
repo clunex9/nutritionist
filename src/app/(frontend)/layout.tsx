@@ -59,6 +59,8 @@ import { Toaster } from '@/components/ui/toast'
 import './styles.css'
 import SmoothScrollProvider from '@/providers/smooth-scroll.provider'
 import SmoothScroll from '@/providers/smooth-scroll.provider'
+import Head from 'next/head'
+import QueryProvider from '@/providers/query.provider'
 
 const urbanist = Urbanist({
   subsets: ['latin'],
@@ -88,12 +90,19 @@ export const metadata: Metadata = {
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={urbanist.variable}>
+      <Head>
+        {/* Agar aap koi external API ya analytics use karenge future me, usko yaha preconnect karein */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+      </Head>
       <body className="bg-green-97 font-sans antialiased">
         <NextTopLoader color="#cbea7b" />
+        {/* <QueryProvider> */}
         <AuthSyncProvider>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
         </AuthSyncProvider>
+        {/* </QueryProvider> */}
       </body>
     </html>
   )

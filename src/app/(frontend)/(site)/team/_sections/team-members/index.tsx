@@ -39,7 +39,7 @@ export default async function TeamMembers() {
         ? (member.avatar as TeamAvatar)
         : null
 
-    const imageUrl = avatarObj?.url || avatarObj?.thumbnailURL || ''
+    const imageUrl = avatarObj?.thumbnailURL || avatarObj?.url || ''
 
     return {
       id: member.id as string,

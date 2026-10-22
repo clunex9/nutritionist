@@ -6,9 +6,22 @@ export const BlogImage: CollectionConfig = {
     group: 'avatar/image',
   },
   access: {
-    read: () => true, // Frontend par images dikhane ke liye zaroori hai
+    read: () => true,
   },
-  upload: true,
+  upload: {
+    // 🔥 Original image ko auto WebP me compress karega (75% quality is visually perfect)
+    formatOptions: { format: 'webp', options: { quality: 75 } },
+    imageSizes: [
+      {
+        name: 'thumbnail',
+        width: 600,
+        height: 400,
+        position: 'centre',
+        formatOptions: { format: 'webp', options: { quality: 75 } },
+      },
+    ],
+    adminThumbnail: 'thumbnail',
+  },
   fields: [
     {
       name: 'alt',

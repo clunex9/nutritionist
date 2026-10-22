@@ -1,53 +1,11 @@
-import type { Testimonial, TestimonialAvatar } from '@/payload-types' // Avatar type import kiya
-import { cacheLife, cacheTag } from 'next/cache'
-
-import TestimonialSection from './testimonial.section'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-
-async function getCachedTestimonials() {
-  'use cache'
-  cacheLife('hours')
-  cacheTag('testimonials-data')
-
-  const payload = await getPayload({ config: configPromise })
-
-  const { docs } = await payload.find({
-    collection: 'testimonials',
-    limit: 10,
-    depth: 1,
-    pagination: false,
-    select: {
-      clientName: true,
-      review: true,
-      avatar: true,
-    },
-  })
-
-  return docs as unknown as Testimonial[]
-}
+import { fetchTestimonialsAction } from '@/actions/testimonial.action'
+import TestimonialSection from './testimonial.section' // Aapka client carousel component
 
 export default async function Testimonial() {
-  const rawTestimonials = await getCachedTestimonials()
+  // 🔥 Server Action call kiya (Jo fully cached hai)
+  const cleanTestimonials = await fetchTestimonialsAction()
 
-  if (!rawTestimonials || rawTestimonials.length === 0) return null
-
-  // 🔥 DATA SANITIZATION: Client ko object ki jagah sirf strings pass karein
-  const cleanTestimonials = rawTestimonials.map((item) => {
-    const avatarObj =
-      typeof item.avatar === 'object' && item.avatar !== null
-        ? (item.avatar as TestimonialAvatar)
-        : null
-
-    const avatarUrl = avatarObj?.thumbnailURL || avatarObj?.url || ''
-
-    return {
-      id: item.id,
-      clientName: item.clientName,
-      review: item.review,
-      avatarUrl: avatarUrl, // Ab ye direct string hai!
-    }
-  })
+  if (!cleanTestimonials || cleanTestimonials.length === 0) return null
 
   return <TestimonialSection data={cleanTestimonials} />
 }

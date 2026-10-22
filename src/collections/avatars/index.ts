@@ -9,12 +9,14 @@ export const Avatars: CollectionConfig = {
     read: () => true,
   },
   upload: {
+    formatOptions: { format: 'webp', options: { quality: 75 } },
     imageSizes: [
       {
         name: 'thumbnail',
         width: 150,
         height: 150,
         position: 'centre',
+        formatOptions: { format: 'webp', options: { quality: 75 } },
       },
     ],
     adminThumbnail: 'thumbnail',

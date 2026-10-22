@@ -12,12 +12,15 @@ export const TeamAvatar: CollectionConfig = {
     imageSizes: [
       {
         name: 'thumbnail',
-        width: 150,
-        height: 150,
-        position: 'centre',
+        width: 256,
       },
     ],
     adminThumbnail: 'thumbnail',
+    // 🔥 Pro-tip: Next-gen format use karne se file size 30-40% aur kam ho jayega quality loose kiye bina
+    formatOptions: {
+      format: 'webp',
+      options: { quality: 80 },
+    },
   },
   fields: [
     {

@@ -114,7 +114,7 @@ export default function Pricing() {
 
           {pricingTabs.map(({ value, plans }) => (
             <TabsContent key={value} value={value} className="mt-7.5 w-full">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {plans.map((plan, index) => (
                   <Card
                     key={index}

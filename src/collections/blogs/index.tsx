@@ -24,6 +24,7 @@ export const Blogs: CollectionConfig = {
       name: 'category',
       type: 'text',
       required: true,
+      index: true,
     },
     {
       name: 'description',
@@ -41,6 +42,7 @@ export const Blogs: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users', // ✅ Aapke existing Users collection se link kiya
       required: true,
+      index: true,
       admin: {
         // Option: Dropdown me sirf wahi users dikhaye jinka role admin/editor/author hai
         condition: () => true,

@@ -56,9 +56,7 @@ export default function BlogCoverImage({
         priority={priority}
         sizes={sizes}
         className={cn('z-10 object-cover', imageClassName)}
-        // 🔥 3. Image successful load hone par shimmer hatao
         onLoad={() => setIsLoading(false)}
-        // 🔥 4. Agar image broken hai toh fallback par bhej do
         onError={() => {
           setIsLoading(false)
           setHasError(true)

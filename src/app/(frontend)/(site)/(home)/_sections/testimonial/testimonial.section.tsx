@@ -155,9 +155,9 @@ export default function TestimonialSection({ data = [] }: { data: CleanTestimoni
           opts={{ align: 'start', loop: data.length > 3, slidesToScroll: 'auto' }}
           className="w-full"
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-5">
             {data.map((item) => (
-              <CarouselItem key={item.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+              <CarouselItem key={item.id} className="pl-5 md:basis-1/2 lg:basis-1/3">
                 <TestimonialCard item={item} />
               </CarouselItem>
             ))}
